@@ -3072,7 +3072,7 @@ const produtosSimplificado = {
   "campos": {
     "Registro ISBN": {
       "sim": {
-        "preco_fixo": 10.00,
+        "preco_fixo": 149.90,
         "preco_por_unidade": 0,
         "preco_por_pagina": 0
       }
@@ -4571,6 +4571,21 @@ window.validateAndNext = validateAndNext;
         document.addEventListener('DOMContentLoaded', function() {
             console.log("DOM totalmente carregado");
             
+            // Inicializar o select de assunto do livro
+            populateAssuntoSelect();
+            
+            // Adicionar event listener para o toggle de ISBN
+            const isbnToggle = document.getElementById('isbnToggle');
+            if (isbnToggle) {
+                isbnToggle.addEventListener('change', function() {
+                    if (this.checked) {
+                        $('#assunto-field').slideDown();
+                    } else {
+                        $('#assunto-field').slideUp();
+                    }
+                });
+            }
+            
             // Verificar se as funções estão disponíveis
             if (typeof applyModelConfiguration === 'function') {
                 console.log("Função applyModelConfiguration está disponível");
@@ -4587,6 +4602,59 @@ window.validateAndNext = validateAndNext;
                 console.error("Função applyModelConfiguration não está disponível");
             }
         });
+        
+        // Função para popular o select de assunto do livro
+        function populateAssuntoSelect() {
+            const assuntos = [
+                "Administração",
+                "Artes",
+                "Autoajuda",
+                "Biografias",
+                "Ciências",
+                "Computação",
+                "Contos",
+                "Crônicas",
+                "Direito",
+                "Educação",
+                "Engenharia",
+                "Esportes",
+                "Filosofia",
+                "Finanças",
+                "História",
+                "Infantil",
+                "Juvenil",
+                "Literatura Brasileira",
+                "Literatura Estrangeira",
+                "Medicina",
+                "Poesia",
+                "Psicologia",
+                "Religião",
+                "Romance",
+                "Saúde",
+                "Tecnologia",
+                "Outros"
+            ];
+            
+            const assuntoSelect = document.getElementById('assunto_livro');
+            if (assuntoSelect) {
+                // Limpar opções existentes
+                assuntoSelect.innerHTML = '';
+                
+                // Adicionar opção padrão
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.text = 'Selecione o assunto';
+                assuntoSelect.appendChild(defaultOption);
+                
+                // Adicionar as opções de assunto
+                assuntos.forEach(assunto => {
+                    const option = document.createElement('option');
+                    option.value = assunto.toLowerCase();
+                    option.text = assunto;
+                    assuntoSelect.appendChild(option);
+                });
+            }
+        }
         
         // Funcionalidade para o upload de arquivos
         const dropArea = document.getElementById('dropArea');
