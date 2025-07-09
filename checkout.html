@@ -2685,7 +2685,7 @@
                                         <div class="p-4 border rounded-lg">
                                             <div class="flex items-center justify-between">
                                                 <label for="isbnToggle" class="font-medium text-gray-700 w-full cursor-pointer">
-                                                    <span>Registro de ISBN — R$ 149,90 (valor fixo)</span>
+                                                    <span>Registro de ISBN</span>
                                                     <i class="fas fa-question-circle info-icon" data-title="Registro de ISBN" data-image-uri="data:image/svg+xml;utf8,%3Csvg width='100%25' viewBox='0 0 400 100' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='50' y='20' width='300' height='60' fill='%23f0f0f0' stroke='%232B4388' stroke-width='1'/%3E%3Ctext x='200' y='50' text-anchor='middle' font-family='Arial' font-size='12'%3E978-85-XXXXX-XX-X%3C/text%3E%3Ctext x='200' y='70' text-anchor='middle' font-family='Arial' font-size='10'%3ECódigo de barras ISBN%3C/text%3E%3C/svg%3E" data-content="O ISBN é um código único que identifica seu livro internacionalmente. Essencial para comercialização. Nosso serviço inclui o registro, a ficha catalográfica e o código de barras."></i>
                                                 </label>
                                                 <label class="switch ml-4"><input type="checkbox" id="isbnToggle" onchange="console.log('ISBN toggle onchange event'); updateSummary();"><span class="slider"></span></label>
@@ -2913,7 +2913,7 @@
                                         <div class="p-4 border rounded-lg">
                                             <div class="flex items-center justify-between">
                                                 <label for="shrinkToggle" class="font-medium text-gray-700 w-full cursor-pointer">
-                                                    <span>Embalagem plástica individual (Shrink) — R$ 0,30 por unidade</span>
+                                                    <span>Embalagem plástica individual (Shrink)</span>
                                                     <i class="fas fa-question-circle info-icon" data-title="Embalagem Plástica" data-image-uri="data:image/svg+xml;utf8,%3Csvg width='100%25' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='20' y='10' width='60' height='80' rx='5' fill='%23f0f0f0' stroke='%232B4388' stroke-width='2'/%3E%3Cpath d='M15 5 L85 5 L85 95 L15 95 Z' fill='rgba(43,67,136,0.1)' stroke='rgba(43,67,136,0.5)' stroke-width='1' stroke-dasharray='4 2'/%3E%3Cpath d='M25,20 L75,70 M25,70 L75,20' stroke='rgba(255,255,255,0.7)' stroke-width='5'/%3E%3C/svg%3E" data-content="Uma embalagem protege seus livros contra umidade e avarias. <b>Shrink</b> é uma selagem simples, enquanto a <b>Plastificação Individual</b> oferece uma proteção mais robusta para venda."></i>
                                                 </label>
                                                 <label class="switch ml-4"><input type="checkbox" id="shrinkToggle"><span class="slider"></span></label>
@@ -2926,7 +2926,7 @@
                                         <div class="p-4 border rounded-lg">
                                             <div class="flex items-center justify-between">
                                                 <label for="marcadorToggle" class="font-medium text-gray-700 w-full cursor-pointer">
-                                                    <span>Marcador de Página — R$ 1,50 por unidade</span>
+                                                    <span>Marcador de Página</span>
                                                     <i class="fas fa-question-circle info-icon" data-title="Marcador de Página" data-image-uri="data:image/svg+xml;utf8,%3Csvg width='100%25' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 10 H70 V80 L50 65 L30 80 Z' fill='%23f0f0f0' stroke='%232B4388' stroke-width='2'/%3E%3Ccircle cx='50' cy='25' r='5' fill='%232B4388'/%3E%3C/svg%3E" data-content="Ofereça um brinde aos seus leitores! Criamos marcadores de página personalizados, que podem ser impressos só na frente (4x0) ou frente e verso (4x4)."></i>
                                                 </label>
                                                 <label class="switch ml-4"><input type="checkbox" id="marcadorToggle"><span class="slider"></span></label>
@@ -2961,7 +2961,7 @@
                                         <div class="p-4 border rounded-lg">
                                             <div class="flex items-center justify-between">
                                                 <label for="correcaoToggle" class="font-medium text-gray-700 w-full cursor-pointer">
-                                                    <span>Revisão Ortográfica — R$ 19,21 por página</span>
+                                                    <span>Revisão Ortográfica</span>
                                                     <i class="fas fa-question-circle info-icon" data-title="Revisão Ortográfica" data-image-uri="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='60' viewBox='0 0 100 60'%3E%3Crect x='1' y='1' width='98' height='48' rx='4' ry='4' fill='white' stroke='%23CCCCCC' stroke-width='2'%3E%3C/rect%3E%3Cline x1='12' y1='15' x2='60' y2='15' stroke='%23AAAAAA' stroke-width='2'%3E%3C/line%3E%3Cline x1='12' y1='28' x2='50' y2='28' stroke='%23AAAAAA' stroke-width='2'%3E%3C/line%3E%3Cpath d='M65 20 l8 8 l15 -15' stroke='%232B4388' fill='none' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3C/path%3E%3C/svg%3E" data-content="A revisão ortográfica e gramatical é essencial para garantir a qualidade e credibilidade da sua obra.<br><br>Nossos revisores profissionais verificam:<br> - Ortografia e gramática<br> - Pontuação e acentuação<br> - Concordância verbal e nominal<br> - Coerência e coesão textual"></i>
                                                 </label>
                                                 <label class="switch ml-4"><input type="checkbox" id="correcaoToggle"><span class="slider"></span></label>
@@ -4119,6 +4119,21 @@ function calcularValorCampo(nomeCampo, opcao, quantidade, numPaginas) {
     }
     
     const isbnCost = values.isbn ? 149.90 : 0; // Valor fixo de R$ 149,90 para o ISBN
+    
+    // Cálculo para orelha
+    let orelhaCost = 0;
+    if (values.orelha && values.orelha !== 'N/A' && values.orelha !== 'sem') {
+        // Valor da orelha baseado no tamanho (calculando como um adicional por unidade)
+        const valoresOrelha = {
+            '6cm': 2.50,
+            '7cm': 3.00,
+            '8cm': 3.50,
+            '10cm': 4.50
+        };
+        orelhaCost = (valoresOrelha[values.orelha] || 0) * values.quantidade;
+        console.log(`Orelha: ${values.orelha} - Custo: ${orelhaCost}`);
+    }
+    
     const designerCost = values.designer ? calcularValorCampo("Designer", values.designerOption, values.quantidade, values.paginas_pb + values.paginas_cl) : 0;
     const shrinkCost = values.shrink_active ? calcularValorCampo("Shrink", values.shrink_type, values.quantidade, values.paginas_pb + values.paginas_cl) : 0;
     const marcadorCost = values.marcador ? calcularValorCampo("Marcador", values.tipoMarcador, values.quantidade, values.paginas_pb + values.paginas_cl) : 0;
@@ -4131,10 +4146,11 @@ function calcularValorCampo(nomeCampo, opcao, quantidade, numPaginas) {
     const precoSubtotal = precoPorLivro * values.quantidade;
     
     // Preço total do pedido
-    const precoTotal = precoSubtotal + isbnCost + designerCost + shrinkCost + marcadorCost + correcaoCost + shippingCost;
+    const precoTotal = precoSubtotal + isbnCost + orelhaCost + designerCost + shrinkCost + marcadorCost + correcaoCost + shippingCost;
     console.log("Componentes do preço total:", {
         precoSubtotal,
         isbnCost,
+        orelhaCost,
         designerCost,
         shrinkCost,
         marcadorCost,
@@ -4175,6 +4191,11 @@ function calcularValorCampo(nomeCampo, opcao, quantidade, numPaginas) {
     if (values.isbn) {
         console.log("Adicionando ISBN ao resumo com valor:", isbnCost);
         resumo += `<div class="flex justify-between"><span>Registro ISBN</span><span class="font-semibold">${isbnCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
+    }
+    
+    if (orelhaCost > 0) {
+        console.log("Adicionando orelha ao resumo com valor:", orelhaCost);
+        resumo += `<div class="flex justify-between"><span>Orelha ${values.orelha}</span><span class="font-semibold">${orelhaCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
     }
             if (values.designer && values.designerOption) resumo += `<div class="flex justify-between"><span>${labels.designer[values.designerOption]}</span><span class="font-semibold">${designerCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
             if (values.shrink_active) resumo += `<div class="flex justify-between"><span>${labels.shrink[values.shrink_type]}</span><span class="font-semibold">${shrinkCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;

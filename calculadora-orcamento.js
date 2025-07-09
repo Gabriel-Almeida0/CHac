@@ -16774,6 +16774,20 @@ function updateSummary() {
     console.log("ISBN está marcado? (isbnToggle.checked):", isbnChecked);
     console.log("Valor do ISBN:", isbnCost);
     
+    // Cálculo para orelha
+    let orelhaCost = 0;
+    if (values.orelha && values.orelha !== 'N/A' && values.orelha !== 'sem') {
+        // Valor da orelha baseado no tamanho (calculando como um adicional por unidade)
+        const valoresOrelha = {
+            '6cm': 2.50,
+            '7cm': 3.00,
+            '8cm': 3.50,
+            '10cm': 4.50
+        };
+        orelhaCost = (valoresOrelha[values.orelha] || 0) * values.quantidade;
+        console.log(`Orelha: ${values.orelha} - Custo: ${orelhaCost}`);
+    }
+    
     // Cálculo para serviços de arte (capa/diagramação)
     let designerCost = 0;
     if (values.designer && values.designerOption) {
@@ -16805,12 +16819,13 @@ function updateSummary() {
     const precoSubtotal = precoPorLivro * values.quantidade;
     
     // Preço total do pedido
-    const precoTotal = precoSubtotal + isbnCost + designerCost + shrinkCost + marcadorCost + correcaoCost + shippingCost;
+    const precoTotal = precoSubtotal + isbnCost + orelhaCost + designerCost + shrinkCost + marcadorCost + correcaoCost + shippingCost;
     
     // Log detalhado dos componentes do preço
     console.log("COMPONENTES DO PREÇO:");
     console.log("- Subtotal: ", precoSubtotal);
     console.log("- ISBN: ", isbnCost);
+    console.log("- Orelha: ", orelhaCost, "(Tipo:", values.orelha, ")");
     console.log("- Designer: ", designerCost);
     console.log("- Shrink: ", shrinkCost, "(Shrink ativo:", values.shrink_active, ", Quantidade:", values.quantidade, ")");
     console.log("- Marcador: ", marcadorCost);
@@ -16850,6 +16865,11 @@ function updateSummary() {
     if (values.isbn || isbnChecked) {
         console.log("Adicionando ISBN ao resumo:", isbnCost);
         resumo += `<div class="flex justify-between"><span>Registro ISBN</span><span class="font-semibold">${isbnCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
+    }
+    
+    if (orelhaCost > 0) {
+        console.log("Adicionando orelha ao resumo:", orelhaCost);
+        resumo += `<div class="flex justify-between"><span>Orelha ${values.orelha}</span><span class="font-semibold">${orelhaCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
     }
     if (values.designer && values.designerOption) resumo += `<div class="flex justify-between"><span>${labels.designer[values.designerOption]}</span><span class="font-semibold">${designerCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
     if (values.shrink_active) resumo += `<div class="flex justify-between"><span>${labels.shrink[values.shrink_type]}</span><span class="font-semibold">${shrinkCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
