@@ -190,6 +190,26 @@
     </script>
 
     <style>
+        /* Estilos para o botão de toggle do resumo */
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        #summary-mobile-content {
+            transition: all 0.3s ease;
+        }
+        
+        .fixed.bottom-0 {
+            transition: height 0.3s ease, max-height 0.3s ease;
+        }
+        #expand-collapse-btn {
+            transition: all 0.2s ease;
+        }
+        #expand-collapse-btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+
+    <style>
         /* --- Nova Paleta de Cores e Estilos Globais --- */
         :root {
             --cor-primaria: #2B4388; /* Azul do Logo */
@@ -3357,21 +3377,182 @@
                         <div id="summary"></div>
                     </div>
                     
-                    <div id="summary-mobile-container" class="md:hidden">
+                    <div id="mobile-order-summary" class="md:hidden">
                         <div class="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.1)] p-4 rounded-t-lg">
-                            <button id="summary-mobile-toggle" class="w-full flex justify-between items-center font-semibold">
-                                <span id="mobile-product-name-display" class="product-name-tag"></span>
-                                <div class="flex items-center gap-4">
-                                    <div class="text-right">
-                                        <span id="mobile-total-price" class="block font-bold text-lg text-[#2B4388]"></span>
-                                        <span id="mobile-unit-price" class="block text-xs text-gray-500 font-medium"></span>
+                            <div class="w-full flex justify-between items-center">
+                                <div>
+                                    <h3 class="font-bold text-lg text-[#2B4388]">Resumo do Pedido</h3>
                                     </div>
-                                    <i class="fas fa-chevron-up transition-transform"></i>
+                                <div>
+                                    <span id="mobile-total-price" class="font-bold text-lg text-[#2B4388]"></span>
                                 </div>
-                            </button>
-                            <div id="summary-mobile-content" class="hidden mt-4 border-t pt-4"></div>
+                            </div>
+                            
+                            <!-- Botão para expandir/contrair o resumo -->
+                            <div class="text-center pt-2">
+                                                                <button id="expand-collapse-btn" onclick="toggleMobileDetails()" class="text-xs text-[#2B4388] flex items-center justify-center w-full bg-gray-100 hover:bg-gray-200 py-2 rounded-lg active:bg-gray-300 focus:outline-none">
+                                    <span class="mr-1">Ver detalhes</span>
+                                    <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                                </button>
+                                
+                                <script>
+                                    // Estado inicial da página antes de expandir
+                                    var initialPageState = null;
+                                    var initialSummaryHeight = null;
+                                    
+                                    // Função global direta para toggle
+                                    function toggleMobileDetails() {
+                                        console.log("toggleMobileDetails chamado diretamente");
+                                        var content = document.getElementById('summary-mobile-content');
+                                        var btn = document.getElementById('expand-collapse-btn');
+                                        var mobileOrderSummary = document.getElementById('mobile-order-summary');
+                                        var summaryContainer = document.querySelector('.fixed.bottom-0');
+                                        
+                                        if (!content || !btn) {
+                                            console.error("Elementos essenciais não encontrados");
+                                            return;
+                                        }
+                                        
+                                        // Verificar visibilidade
+                                        var isVisible = content.style.display === 'block';
+                                        
+                                        // Alternar visibilidade
+                                        if (isVisible) {
+                                            // OCULTAR DETALHES - voltar ao estado original
+                                            content.style.display = 'none';
+                                            btn.querySelector('span').textContent = 'Ver detalhes';
+                                            btn.querySelector('i').classList.remove('rotate-180');
+                                            
+                                            // Restaurar altura original do container
+                                            if (summaryContainer && initialSummaryHeight) {
+                                                summaryContainer.style.height = initialSummaryHeight;
+                                                summaryContainer.style.maxHeight = initialSummaryHeight;
+                                                console.log("Altura do resumo restaurada para:", initialSummaryHeight);
+                                            }
+                                            
+                                            // Restaurar posição da página se tiver sido salva
+                                            if (initialPageState) {
+                                                window.scrollTo({
+                                                    top: initialPageState.scrollY,
+                                                    behavior: 'smooth'
+                                                });
+                                                console.log("Restaurando posição da página:", initialPageState.scrollY);
+                                            }
+                                            
+                                            // Garantir que o resumo móvel esteja visível
+                                            if (mobileOrderSummary) {
+                                                setTimeout(function() {
+                                                    mobileOrderSummary.scrollIntoView({block: 'end', behavior: 'smooth'});
+                                                }, 100);
+                                            }
+                                            
+                                            console.log("Detalhes ocultados e estado original restaurado");
+                                        } else {
+                                            // MOSTRAR DETALHES - salvar estado atual primeiro
+                                            initialPageState = {
+                                                scrollY: window.scrollY,
+                                                scrollX: window.scrollX
+                                            };
+                                            
+                                            // Salvar altura original do container
+                                            if (summaryContainer) {
+                                                initialSummaryHeight = summaryContainer.style.height || 'auto';
+                                                console.log("Altura inicial do resumo salva:", initialSummaryHeight);
+                                            }
+                                            
+                                            // Mostrar conteúdo
+                                            content.style.display = 'block';
+                                            btn.querySelector('span').textContent = 'Ocultar detalhes';
+                                            btn.querySelector('i').classList.add('rotate-180');
+                                            
+                                            // Atualizar o resumo
+                                            if (typeof updateSummary === 'function') {
+                                                updateSummary();
+                                            }
+                                            
+                                            // Ajustar altura do container para acomodar o conteúdo
+                                            if (summaryContainer) {
+                                                summaryContainer.style.height = 'auto';
+                                                summaryContainer.style.maxHeight = '80vh';
+                                            }
+                                            
+                                            // Rolar para mostrar o conteúdo expandido
+                                            setTimeout(function() {
+                                                content.scrollIntoView({block: 'start', behavior: 'smooth'});
+                                                console.log("Scroll ajustado para mostrar conteúdo");
+                                            }, 100);
+                                        }
+                                        return false;
+                                    }
+                                </script>
                         </div>
+                            
+                            <!-- O resumo (inicialmente escondido) -->
+                            <div id="summary-mobile-content" class="max-h-[70vh] overflow-y-auto pb-2 text-sm border-t mt-2 pt-3"></div>
                     </div>
+                    </div>
+                    
+                    <script>
+                        // Script direto para toggle do resumo - solução robusta
+                        document.addEventListener('DOMContentLoaded', function() {
+                            console.clear();
+                            console.log("==== INICIALIZANDO TOGGLE DO RESUMO (VERSÃO CORRIGIDA) ====");
+                            
+                            // Esconder resumo inicialmente
+                            var content = document.getElementById('summary-mobile-content');
+                            if (content) content.style.display = 'none';
+                            
+                            // Adicionar onclick diretamente ao botão (sobrescreve qualquer handler existente)
+                            var btn = document.getElementById('expand-collapse-btn');
+                            if (btn) {
+                                // Remover todos os eventos antigos
+                                var newBtn = btn.cloneNode(true);
+                                if (btn.parentNode) {
+                                    btn.parentNode.replaceChild(newBtn, btn);
+                                }
+                                btn = newBtn;
+                                
+                                // Adicionar função onclick diretamente
+                                btn.onclick = function() {
+                                    var content = document.getElementById('summary-mobile-content');
+                                    var btnSpan = this.querySelector('span');
+                                    var btnIcon = this.querySelector('i');
+                                    
+                                    if (!content) {
+                                        console.error("Elemento summary-mobile-content não encontrado!");
+                                        return;
+                                    }
+                                    
+                                    // Verificar visibilidade atual
+                                    var isVisible = content.style.display === 'block';
+                                    console.log("Botão clicado. Resumo está visível:", isVisible);
+                                    
+                                    if (isVisible) {
+                                        // OCULTAR
+                                        content.style.display = 'none';
+                                        if (btnSpan) btnSpan.textContent = 'Ver detalhes';
+                                        if (btnIcon) btnIcon.classList.remove('rotate-180');
+                                        console.log("Resumo ocultado com sucesso");
+                                    } else {
+                                        // MOSTRAR
+                                        content.style.display = 'block';
+                                        if (btnSpan) btnSpan.textContent = 'Ocultar detalhes';
+                                        if (btnIcon) btnIcon.classList.add('rotate-180');
+                                        // Atualizar conteúdo
+                                        if (typeof updateSummary === 'function') {
+                                            updateSummary();
+                                        }
+                                        console.log("Resumo exibido com sucesso");
+                                    }
+                                    return false; // Prevenir comportamento default
+                                };
+                                
+                                console.log("Evento onclick adicionado com sucesso ao botão");
+                            } else {
+                                console.error("Botão expand-collapse-btn não encontrado!");
+                            }
+                        });
+                    </script>
                 </div>
             </main>
         
@@ -3438,6 +3619,21 @@
         </div>
         <script src="data:text/javascript;base64,ZG9jdW1lbnQuYWRkRXZlbnRMaXN0ZW5lcigiRE9NQ29udGVudExvYWRlZCIsZnVuY3Rpb24oKXt2YXIgbGlua3M9ZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbCgiYVtocmVmXj0nI3dhLWxpbmsnXSIpO3ZhciBiYXNlX2xpbms9ZG9jdW1lbnQucXVlcnlTZWxlY3RvcigiLml3LXdoYXRzYXBwLWJ1dHRvbi1saW5rIik7dmFyIGhyZWY9YmFzZV9saW5rLmhyZWY7dmFyIHRpdGxlPWJhc2VfbGluay50aXRsZTtsaW5rcy5mb3JFYWNoKGZ1bmN0aW9uKGxpbmspe2xpbmsuY2xhc3NMaXN0LmFkZCgiaXctd2hhdHNhcHAtYnV0dG9uLWxpbmsiKTtsaW5rLnNldEF0dHJpYnV0ZSgidGl0bGUiLHRpdGxlKTtsaW5rLmhyZWY9aHJlZjtpZigiaXctd2hhdHNhcHAtYnV0dG9uLWxpbmsiPT0iaXctd2hhdHNhcHAtYnV0dG9uLWxpbmsiKXtpZihsaW5rLmhhc0F0dHJpYnV0ZSgid2EtdGV4dCIpKXt2YXIgdGV4dD1saW5rLmdldEF0dHJpYnV0ZSgid2EtdGV4dCIpO2lmKGhyZWYuaW5jbHVkZXMoIj90ZXh0PSIpKXtsaW5rLmhyZWY9aHJlZi5yZXBsYWNlKC8oXD98Jil0ZXh0PVteJl0qKCZ8JCkvLCI/dGV4dD0iK3RleHQrIiQyIil9ZWxzZXtsaW5rLmhyZWY9aHJlZisiP3RleHQ9Iit0ZXh0fX0KbGluay5zZXRBdHRyaWJ1dGUoInJlbCIsYmFzZV9saW5rLmdldEF0dHJpYnV0ZSgicmVsIikpO2xpbmsuc2V0QXR0cmlidXRlKCJ0YXJnZXQiLGJhc2VfbGluay5nZXRBdHRyaWJ1dGUoInRhcmdldCIpKX1lbHNlIGlmKCJpdy13aGF0c2FwcC1idXR0b24tbGluayI9PSJpdy13aGF0c2FwcC1idXR0b24tb3Blbi1wb3B1cCIpe2xpbmsuY2xhc3NMaXN0LmFkZCgidGhpY2tib3giKX19KX0p" defer></script>
         <style>
+            /* Adiciona classe para rotação da seta */
+            .rotate-180 {
+                transform: rotate(180deg);
+                transition: transform 0.3s ease;
+            }
+            
+            /* Animação para o botão de toggle */
+            #summary-mobile-toggle {
+                transition: all 0.3s ease;
+            }
+            
+            #summary-mobile-toggle:active {
+                background-color: #f0f4ff;
+            }
+            
             .iw-whatsapp-button {
                 bottom: 0;
                 right: 0;
@@ -4215,15 +4411,19 @@ function calcularValorCampo(nomeCampo, opcao, quantidade, numPaginas) {
     console.log("SubTotal:", precoSubtotal);
     console.log("Total:", precoTotal);
     
-    // Verificar se o elemento #summary existe
+    // Verificar se os elementos de resumo existem
     const summaryElement = document.getElementById('summary');
+    const summaryMobileElement = document.getElementById('summary-mobile-content');
     console.log("Elemento #summary existe?", !!summaryElement);
+    console.log("Elemento #summary-mobile-content existe?", !!summaryMobileElement);
     
     // Atualização da interface com os resultados do cálculo
     try {
         // Tentativa com jQuery
             $('#summary').html(resumo);
-        console.log("Resumo inserido no elemento #summary via jQuery");
+        // Atualizar também o resumo mobile, independente de estar visível ou não
+        $('#summary-mobile-content').html(resumo);
+        console.log("Resumo inserido nos elementos via jQuery");
     } catch (error) {
         console.error("Erro ao usar jQuery:", error);
         
@@ -4237,10 +4437,23 @@ function calcularValorCampo(nomeCampo, opcao, quantidade, numPaginas) {
     }
     
     try {
-            $('#mobile-product-name-display').text(values.modelo);
-        $('#mobile-total-price').html(precoFormatado);
-        $('#mobile-unit-price').html(`${precoUnitarioFormatado} /un.`);
-            $('#summary-mobile-content').html(resumo);
+        // Atualizar elementos do resumo mobile
+        const mobileTotal = document.getElementById('mobile-total-price');
+        const mobileSummary = document.getElementById('summary-mobile-content');
+        
+        if (mobileTotal) {
+            mobileTotal.innerHTML = precoFormatado;
+        }
+        
+        if (mobileSummary) {
+            mobileSummary.innerHTML = resumo;
+            
+            // Verificar se o resumo mobile está vazio
+            if (mobileSummary.innerHTML.trim() === '') {
+                mobileSummary.innerHTML = '<div class="p-4 text-center text-gray-500">Adicione itens ao seu pedido para ver o resumo.</div>';
+            }
+        }
+        
         console.log("Atualização dos elementos móveis concluída");
     } catch (error) {
         console.error("Erro ao atualizar elementos móveis:", error);
@@ -4435,6 +4648,9 @@ window.populateSelect = populateSelect;
 window.applyModelConfiguration = applyModelConfiguration;
 window.showValidationPopup = showValidationPopup;
 window.updateSummary = updateSummary;
+        
+        // A função global para toggle do resumo mobile foi removida
+        // Implementação mais direta diretamente no HTML
 window.validateStep = validateStep;
 window.nextStep = nextStep;
 window.prevStep = prevStep;
@@ -5838,6 +6054,25 @@ window.validateAndNext = validateAndNext;
         $(document).ready(function() {
             // Garantir que o jQuery está carregado
             console.log("Document ready - jQuery versão:", $.fn.jquery);
+            
+            // Inicializar resumo na carga da página
+            setTimeout(function() {
+                updateSummary();
+                console.log("Resumo inicial atualizado");
+                
+                // Verificar se o resumo móvel tem conteúdo
+                if ($('#summary-mobile-content').html() === '' || $('#summary-mobile-content').html() === undefined) {
+                    console.log("Resumo móvel vazio, preenchendo com conteúdo do resumo principal");
+                    $('#summary-mobile-content').html($('#summary').html());
+                }
+            }, 500);
+            
+            // Atualizar resumo quando a janela for redimensionada (útil para visualização responsiva)
+            $(window).on('resize', function() {
+                updateSummary();
+            });
+            
+            // Gerenciamento do resumo mobile removido - implementado diretamente no HTML
             
             // O botão de fechar o popup de validação agora usa onclick diretamente no HTML
             
