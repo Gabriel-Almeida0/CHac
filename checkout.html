@@ -2520,7 +2520,9 @@
                                             </div>
                                             <div id="assunto-field" style="display: none;" class="mt-4">
                                                 <label for="assunto_livro" class="block text-sm font-medium text-gray-600">Assunto do Livro</label>
-                                                <select id="assunto_livro" class="mt-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"></select>
+                                                <select id="assunto_livro" class="mt-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
+                                                    <option value="">Selecione o assunto</option>
+                                                </select>
                                             </div>
                                         </div>
                                         <div class="p-4 border rounded-lg">
@@ -4580,8 +4582,12 @@ window.validateAndNext = validateAndNext;
                 isbnToggle.addEventListener('change', function() {
                     if (this.checked) {
                         $('#assunto-field').slideDown();
+                        // Garantir que o dropdown seja preenchido quando o campo é mostrado
+                        populateAssuntoSelect();
+                        console.log("Toggle ISBN ativado, assunto-field exibido");
                     } else {
                         $('#assunto-field').slideUp();
+                        console.log("Toggle ISBN desativado, assunto-field escondido");
                     }
                 });
             }
@@ -4605,6 +4611,7 @@ window.validateAndNext = validateAndNext;
         
         // Função para popular o select de assunto do livro
         function populateAssuntoSelect() {
+            console.log("Inicializando populateAssuntoSelect");
             const assuntos = [
                 "003 - Sistemas",
                 "004 - Ciência da Computação",
@@ -4822,6 +4829,8 @@ window.validateAndNext = validateAndNext;
             ];
             
             const assuntoSelect = document.getElementById('assunto_livro');
+            console.log("Select de assunto encontrado:", assuntoSelect);
+            
             if (assuntoSelect) {
                 // Limpar opções existentes
                 assuntoSelect.innerHTML = '';
@@ -4839,6 +4848,13 @@ window.validateAndNext = validateAndNext;
                     option.text = assunto;
                     assuntoSelect.appendChild(option);
                 });
+                
+                console.log(`Adicionadas ${assuntos.length} opções ao select de assunto`);
+                
+                // Forçar atualização da visualização do select
+                $(assuntoSelect).trigger('change');
+            } else {
+                console.error("Elemento select 'assunto_livro' não encontrado no DOM");
             }
         }
         
