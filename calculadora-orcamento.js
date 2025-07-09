@@ -2731,7 +2731,7 @@ const produtosSimplificado = {
             "Marcador de página": {
               "Nenhum": {
                 "preco_fixo": 0.0,
-                "preco_por_unidade": 0.0,
+                "preco_por_unidade": 0.45,
                 "preco_por_pagina": 0.0
               },
               "Somente frente": {
@@ -16404,6 +16404,7 @@ const produtosSimplificado = {
     }
   }
   
+  
 
 // Função para popular campos de seleção baseados nos modelos
 function populateSelect(selectId, options, selectedValue = null) {
@@ -16681,7 +16682,10 @@ function updateSummary() {
         designerOption: document.getElementById('designerOption'),
         tipoMarcador: document.getElementById('tipoMarcador'),
         shippingOption: document.querySelector('input[name="shipping_option"]:checked'),
-        payment: document.querySelector('input[name="pagamento"]:checked')
+        payment: document.querySelector('input[name="pagamento"]:checked'),
+        // Verificar os arquivos de upload
+        capaFile: window.capaDropzone ? window.capaDropzone.getAcceptedFiles()[0] : null,
+        mioloFile: window.mioloDropzone ? window.mioloDropzone.getAcceptedFiles()[0] : null
     };
 
     const values = {
@@ -16762,11 +16766,38 @@ function updateSummary() {
     const precoPaginasCL = precoPorPaginaCL * values.paginas_cl;
     
     // Cálculo de preços para campos adicionais
-    const isbnCost = values.isbn ? calcularValorCampo("Registro ISBN", "sim", values.quantidade, values.paginas_pb + values.paginas_cl) : 0;
-    const designerCost = values.designer ? calcularValorCampo("Designer", values.designerOption, values.quantidade, values.paginas_pb + values.paginas_cl) : 0;
-    const shrinkCost = values.shrink_active ? calcularValorCampo("Shrink", values.shrink_type, values.quantidade, values.paginas_pb + values.paginas_cl) : 0;
-    const marcadorCost = values.marcador ? calcularValorCampo("Marcador", values.tipoMarcador, values.quantidade, values.paginas_pb + values.paginas_cl) : 0;
-    const correcaoCost = values.correcao ? calcularValorCampo("Revisão Ortográfica", "sim", values.quantidade, values.paginas_pb + values.paginas_cl) : 0;
+    // Valor fixo para o ISBN
+    const isbnToggle = document.getElementById('isbnToggle');
+    const isbnChecked = isbnToggle ? isbnToggle.checked : false;
+    const isbnCost = (values.isbn || isbnChecked) ? 149.90 : 0;
+    console.log("ISBN está marcado? (values.isbn):", values.isbn);
+    console.log("ISBN está marcado? (isbnToggle.checked):", isbnChecked);
+    console.log("Valor do ISBN:", isbnCost);
+    
+    // Cálculo para serviços de arte (capa/diagramação)
+    let designerCost = 0;
+    if (values.designer && values.designerOption) {
+        if (values.designerOption === 'somente_capa') {
+            designerCost = 485.00; // Valor fixo para criação de capa
+            console.log("Serviço de arte: Criação de Capa Profissional - R$485,00");
+        } else if (values.designerOption === 'somente_diagramação') {
+            designerCost = 3.50 * (values.paginas_pb + values.paginas_cl); // R$3,50 por página
+            console.log("Serviço de arte: Diagramação do Miolo - R$3,50 x", (values.paginas_pb + values.paginas_cl), "=", designerCost);
+        } else if (values.designerOption === 'capa_diagramação') {
+            designerCost = 485.00 + (3.50 * (values.paginas_pb + values.paginas_cl)); // Capa + diagramação
+            console.log("Serviço de arte: Capa + Diagramação - R$485,00 + (R$3,50 x", (values.paginas_pb + values.paginas_cl), ") =", designerCost);
+        }
+    }
+    
+    // Valor fixo para o Shrink
+    const shrinkCost = values.shrink_active ? 0.30 * values.quantidade : 0;
+    console.log("Shrink:", values.shrink_active ? "Embalagem plástica individual" : "Nenhum", "- Custo:", shrinkCost);
+    
+    // Valor fixo para marcador
+    const marcadorCost = values.marcador ? 1.50 * values.quantidade : 0; // R$1,50 por unidade, independente do tipo
+    // Valor fixo para revisão ortográfica: R$19,21 por página
+    const correcaoCost = values.correcao ? 19.21 * (values.paginas_pb + values.paginas_cl) : 0;
+    console.log("Revisão Ortográfica:", values.correcao ? "Sim" : "Não", "- Páginas:", (values.paginas_pb + values.paginas_cl), "- Custo:", correcaoCost);
     const shippingCost = values.shippingOption ? calcularValorCampo("Frete", values.shippingOption, values.quantidade, values.paginas_pb + values.paginas_cl) : 0;
     
          // Preço por livro - removido preço base fixo
@@ -16775,6 +16806,17 @@ function updateSummary() {
     
     // Preço total do pedido
     const precoTotal = precoSubtotal + isbnCost + designerCost + shrinkCost + marcadorCost + correcaoCost + shippingCost;
+    
+    // Log detalhado dos componentes do preço
+    console.log("COMPONENTES DO PREÇO:");
+    console.log("- Subtotal: ", precoSubtotal);
+    console.log("- ISBN: ", isbnCost);
+    console.log("- Designer: ", designerCost);
+    console.log("- Shrink: ", shrinkCost, "(Shrink ativo:", values.shrink_active, ", Quantidade:", values.quantidade, ")");
+    console.log("- Marcador: ", marcadorCost);
+    console.log("- Correção: ", correcaoCost);
+    console.log("- Frete: ", shippingCost);
+    console.log("= TOTAL: ", precoTotal);
     const precoFormatado = precoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     const precoUnitario = (values.quantidade > 0) ? (precoSubtotal / values.quantidade) : 0;
     const precoUnitarioFormatado = precoUnitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -16805,7 +16847,10 @@ function updateSummary() {
         (isbnCost > 0) || (designerCost > 0) || (shrinkCost > 0) || (marcadorCost > 0) || (correcaoCost > 0) || (shippingCost > 0);
 
     if(servicosAdicionais) resumo += `<hr class="my-2"><div class="font-bold text-gray-600">Serviços Adicionais:</div>`;
-    if (values.isbn) resumo += `<div class="flex justify-between"><span>Registro ISBN</span><span class="font-semibold">${isbnCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
+    if (values.isbn || isbnChecked) {
+        console.log("Adicionando ISBN ao resumo:", isbnCost);
+        resumo += `<div class="flex justify-between"><span>Registro ISBN</span><span class="font-semibold">${isbnCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
+    }
     if (values.designer && values.designerOption) resumo += `<div class="flex justify-between"><span>${labels.designer[values.designerOption]}</span><span class="font-semibold">${designerCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
     if (values.shrink_active) resumo += `<div class="flex justify-between"><span>${labels.shrink[values.shrink_type]}</span><span class="font-semibold">${shrinkCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
     if (values.marcador && values.tipoMarcador) resumo += `<div class="flex justify-between"><span>Marcador (${labels.marcador[values.tipoMarcador]})</span><span class="font-semibold">${marcadorCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
@@ -16815,6 +16860,22 @@ function updateSummary() {
     resumo += `<hr class="my-2">`;
     resumo += `<div class="flex justify-between"><span>Subtotal</span><span>${precoSubtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
     if (values.payment) resumo += `<div class="flex justify-between"><span>Pagamento</span><span class="font-semibold">${labels.payment[values.payment]}</span></div>`;
+    
+    // Adicionar informações dos arquivos enviados
+    if (elements.capaFile || elements.mioloFile) {
+        resumo += `<hr class="my-2"><div class="font-bold text-gray-600">Arquivos Enviados:</div>`;
+        
+        if (elements.capaFile) {
+            const fileSize = (elements.capaFile.size / (1024 * 1024)).toFixed(2);
+            resumo += `<div class="flex justify-between"><span>Arquivo da Capa</span><span class="font-semibold">${elements.capaFile.name} (${fileSize} MB)</span></div>`;
+        }
+        
+        if (elements.mioloFile) {
+            const fileSize = (elements.mioloFile.size / (1024 * 1024)).toFixed(2);
+            resumo += `<div class="flex justify-between"><span>Arquivo do Miolo</span><span class="font-semibold">${elements.mioloFile.name} (${fileSize} MB)</span></div>`;
+        }
+    }
+    
     resumo += `<div class="flex justify-between items-baseline pt-2 mt-2 border-t border-gray-300"><span class="font-bold text-lg text-gray-900">Total</span><span class="font-bold text-lg text-indigo-700 total-price-animation">${precoFormatado}</span></div></div>`;
 
     console.log("Resumo gerado:", resumo);
@@ -16919,6 +16980,17 @@ function validateStep(step) {
                 valid = false;
                 setErrorMessage(ruleText);
             }
+        }
+        
+        // Verificar se os arquivos foram enviados
+        if (window.capaDropzone && window.capaDropzone.getAcceptedFiles().length === 0) {
+            valid = false;
+            setErrorMessage('Por favor, envie o arquivo da capa do livro.');
+        }
+        
+        if (window.mioloDropzone && window.mioloDropzone.getAcceptedFiles().length === 0) {
+            valid = false;
+            setErrorMessage('Por favor, envie o arquivo do miolo do livro.');
         }
 
     } else if (step === 2) {
