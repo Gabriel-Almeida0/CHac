@@ -2516,7 +2516,7 @@
                                                     <span>Registro de ISBN</span>
                                                     <i class="fas fa-question-circle info-icon" data-title="Registro de ISBN" data-image-uri="data:image/svg+xml;utf8,%3Csvg width='100%25' viewBox='0 0 400 100' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='50' y='20' width='300' height='60' fill='%23f0f0f0' stroke='%232B4388' stroke-width='1'/%3E%3Ctext x='200' y='50' text-anchor='middle' font-family='Arial' font-size='12'%3E978-85-XXXXX-XX-X%3C/text%3E%3Ctext x='200' y='70' text-anchor='middle' font-family='Arial' font-size='10'%3ECódigo de barras ISBN%3C/text%3E%3C/svg%3E" data-content="O ISBN é um código único que identifica seu livro internacionalmente. Essencial para comercialização. Nosso serviço inclui o registro, a ficha catalográfica e o código de barras."></i>
                                                 </label>
-                                                <label class="switch ml-4"><input type="checkbox" id="isbnToggle"><span class="slider"></span></label>
+                                                <label class="switch ml-4"><input type="checkbox" id="isbnToggle" onclick="if(this.checked) { $('#assunto-field').slideDown(); populateAssuntoSelect(); }else{ $('#assunto-field').slideUp(); }"><span class="slider"></span></label>
                                             </div>
                                             <div id="assunto-field" style="display: none;" class="mt-4">
                                                 <label for="assunto_livro" class="block text-sm font-medium text-gray-600">Assunto do Livro</label>
@@ -4579,11 +4579,17 @@ window.validateAndNext = validateAndNext;
             // Adicionar event listener para o toggle de ISBN
             const isbnToggle = document.getElementById('isbnToggle');
             if (isbnToggle) {
+                // Inicializar o select imediatamente, mesmo que ainda não visível
+                populateAssuntoSelect();
+                
                 isbnToggle.addEventListener('change', function() {
                     if (this.checked) {
                         $('#assunto-field').slideDown();
-                        // Garantir que o dropdown seja preenchido quando o campo é mostrado
-                        populateAssuntoSelect();
+                        // Forçar abertura do dropdown após preenchimento
+                        setTimeout(function() {
+                            // Tentar abrir o dropdown com clique simulado ou foco
+                            $('#assunto_livro').focus();
+                        }, 100);
                         console.log("Toggle ISBN ativado, assunto-field exibido");
                     } else {
                         $('#assunto-field').slideUp();
@@ -4933,6 +4939,22 @@ window.validateAndNext = validateAndNext;
                 });
             });
         }
+        
+        // Script adicional para garantir que o dropdown de assunto seja preenchido
+        $(document).ready(function() {
+            // Forçar preenchimento do dropdown de assunto
+            populateAssuntoSelect();
+            
+            // Adicionar evento de clique diretamente no campo select
+            $('#assunto_livro').on('click', function() {
+                console.log("Clique no select de assunto");
+                // Verificar se está vazio e popular novamente se necessário
+                if ($(this).find('option').length <= 1) {
+                    console.log("Dropdown vazio, preenchendo novamente...");
+                    populateAssuntoSelect();
+                }
+            });
+        });
     </script>
 
 </html>
