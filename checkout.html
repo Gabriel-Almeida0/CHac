@@ -2522,6 +2522,10 @@
                                                 <label for="assunto_livro" class="block text-sm font-medium text-gray-600">Assunto do Livro</label>
                                                 <select id="assunto_livro" class="mt-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
                                                     <option value="">Selecione o assunto</option>
+                                                    <option value="003">003 - Sistemas</option>
+                                                    <option value="004">004 - Ciência da Computação</option>
+                                                    <option value="010">010 - Bibliografias e catálogos</option>
+                                                    <option value="B869">B869 - Literatura brasileira</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -4618,6 +4622,13 @@ window.validateAndNext = validateAndNext;
         // Função para popular o select de assunto do livro
         function populateAssuntoSelect() {
             console.log("Inicializando populateAssuntoSelect");
+            
+            // Forçar inicialização do jQuery se ainda não estiver carregado
+            if (typeof $ === 'undefined') {
+                console.error("jQuery não está disponível!");
+                return;
+            }
+            
             const assuntos = [
                 "003 - Sistemas",
                 "004 - Ciência da Computação",
@@ -4834,31 +4845,38 @@ window.validateAndNext = validateAndNext;
                 "B869.9 - História e crítica literária brasileira"
             ];
             
-            const assuntoSelect = document.getElementById('assunto_livro');
-            console.log("Select de assunto encontrado:", assuntoSelect);
+            // Usar jQuery para manipulação mais confiável do DOM
+            const assuntoSelect = $('#assunto_livro');
+            console.log("Select de assunto encontrado:", assuntoSelect.length);
             
-            if (assuntoSelect) {
+            if (assuntoSelect.length) {
                 // Limpar opções existentes
-                assuntoSelect.innerHTML = '';
+                assuntoSelect.empty();
                 
                 // Adicionar opção padrão
-                const defaultOption = document.createElement('option');
-                defaultOption.value = '';
-                defaultOption.text = 'Selecione o assunto';
-                assuntoSelect.appendChild(defaultOption);
+                assuntoSelect.append($('<option>').val('').text('Selecione o assunto'));
                 
                 // Adicionar as opções de assunto
                 assuntos.forEach(assunto => {
-                    const option = document.createElement('option');
-                    option.value = assunto.split(' - ')[0].trim();
-                    option.text = assunto;
-                    assuntoSelect.appendChild(option);
+                    const valor = assunto.split(' - ')[0].trim();
+                    assuntoSelect.append($('<option>').val(valor).text(assunto));
                 });
                 
                 console.log(`Adicionadas ${assuntos.length} opções ao select de assunto`);
                 
                 // Forçar atualização da visualização do select
-                $(assuntoSelect).trigger('change');
+                assuntoSelect.trigger('change');
+                
+                // Tentar forçar visualização das opções - isso pode ajudar em alguns navegadores
+                try {
+                    // Versão compatível com mais navegadores
+                    const selectNative = document.getElementById('assunto_livro');
+                    const event = new Event('mousedown', { bubbles: true });
+                    selectNative.dispatchEvent(event);
+                    console.log("Evento mousedown disparado no select");
+                } catch (e) {
+                    console.error("Erro ao disparar evento:", e);
+                }
             } else {
                 console.error("Elemento select 'assunto_livro' não encontrado no DOM");
             }
@@ -4942,16 +4960,39 @@ window.validateAndNext = validateAndNext;
         
         // Script adicional para garantir que o dropdown de assunto seja preenchido
         $(document).ready(function() {
+            // Garantir que o jQuery está carregado
+            console.log("Document ready - jQuery versão:", $.fn.jquery);
+            
             // Forçar preenchimento do dropdown de assunto
-            populateAssuntoSelect();
+            setTimeout(function() {
+                console.log("Populando select com timeout...");
+                populateAssuntoSelect();
+            }, 500);
+            
+            // Inicializar seleção direta após o load
+            $('#assunto_livro').append($('<option>').val('003').text('003 - Sistemas'));
             
             // Adicionar evento de clique diretamente no campo select
             $('#assunto_livro').on('click', function() {
                 console.log("Clique no select de assunto");
                 // Verificar se está vazio e popular novamente se necessário
-                if ($(this).find('option').length <= 1) {
-                    console.log("Dropdown vazio, preenchendo novamente...");
+                if ($(this).find('option').length <= 2) {
+                    console.log("Dropdown com poucas opções, preenchendo novamente...");
                     populateAssuntoSelect();
+                }
+            });
+            
+            // Adicionar tratamento para o toggle de ISBN
+            $('#isbnToggle').on('change', function() {
+                if (this.checked) {
+                    console.log("ISBN toggle ativado via jQuery");
+                    $('#assunto-field').slideDown(function() {
+                        // Callback após a animação
+                        populateAssuntoSelect();
+                        $('#assunto_livro').focus();
+                    });
+                } else {
+                    $('#assunto-field').slideUp();
                 }
             });
         });
