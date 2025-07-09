@@ -16682,7 +16682,10 @@ function updateSummary() {
         designerOption: document.getElementById('designerOption'),
         tipoMarcador: document.getElementById('tipoMarcador'),
         shippingOption: document.querySelector('input[name="shipping_option"]:checked'),
-        payment: document.querySelector('input[name="pagamento"]:checked')
+        payment: document.querySelector('input[name="pagamento"]:checked'),
+        // Verificar os arquivos de upload
+        capaFile: window.capaDropzone ? window.capaDropzone.getAcceptedFiles()[0] : null,
+        mioloFile: window.mioloDropzone ? window.mioloDropzone.getAcceptedFiles()[0] : null
     };
 
     const values = {
@@ -16857,6 +16860,22 @@ function updateSummary() {
     resumo += `<hr class="my-2">`;
     resumo += `<div class="flex justify-between"><span>Subtotal</span><span>${precoSubtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
     if (values.payment) resumo += `<div class="flex justify-between"><span>Pagamento</span><span class="font-semibold">${labels.payment[values.payment]}</span></div>`;
+    
+    // Adicionar informações dos arquivos enviados
+    if (elements.capaFile || elements.mioloFile) {
+        resumo += `<hr class="my-2"><div class="font-bold text-gray-600">Arquivos Enviados:</div>`;
+        
+        if (elements.capaFile) {
+            const fileSize = (elements.capaFile.size / (1024 * 1024)).toFixed(2);
+            resumo += `<div class="flex justify-between"><span>Arquivo da Capa</span><span class="font-semibold">${elements.capaFile.name} (${fileSize} MB)</span></div>`;
+        }
+        
+        if (elements.mioloFile) {
+            const fileSize = (elements.mioloFile.size / (1024 * 1024)).toFixed(2);
+            resumo += `<div class="flex justify-between"><span>Arquivo do Miolo</span><span class="font-semibold">${elements.mioloFile.name} (${fileSize} MB)</span></div>`;
+        }
+    }
+    
     resumo += `<div class="flex justify-between items-baseline pt-2 mt-2 border-t border-gray-300"><span class="font-bold text-lg text-gray-900">Total</span><span class="font-bold text-lg text-indigo-700 total-price-animation">${precoFormatado}</span></div></div>`;
 
     console.log("Resumo gerado:", resumo);
@@ -16961,6 +16980,17 @@ function validateStep(step) {
                 valid = false;
                 setErrorMessage(ruleText);
             }
+        }
+        
+        // Verificar se os arquivos foram enviados
+        if (window.capaDropzone && window.capaDropzone.getAcceptedFiles().length === 0) {
+            valid = false;
+            setErrorMessage('Por favor, envie o arquivo da capa do livro.');
+        }
+        
+        if (window.mioloDropzone && window.mioloDropzone.getAcceptedFiles().length === 0) {
+            valid = false;
+            setErrorMessage('Por favor, envie o arquivo do miolo do livro.');
         }
 
     } else if (step === 2) {
