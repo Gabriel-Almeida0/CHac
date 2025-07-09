@@ -2516,7 +2516,7 @@
                                                     <span>Registro de ISBN</span>
                                                     <i class="fas fa-question-circle info-icon" data-title="Registro de ISBN" data-image-uri="data:image/svg+xml;utf8,%3Csvg width='100%25' viewBox='0 0 400 100' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='50' y='20' width='300' height='60' fill='%23f0f0f0' stroke='%232B4388' stroke-width='1'/%3E%3Ctext x='200' y='50' text-anchor='middle' font-family='Arial' font-size='12'%3E978-85-XXXXX-XX-X%3C/text%3E%3Ctext x='200' y='70' text-anchor='middle' font-family='Arial' font-size='10'%3ECódigo de barras ISBN%3C/text%3E%3C/svg%3E" data-content="O ISBN é um código único que identifica seu livro internacionalmente. Essencial para comercialização. Nosso serviço inclui o registro, a ficha catalográfica e o código de barras."></i>
                                                 </label>
-                                                <label class="switch ml-4"><input type="checkbox" id="isbnToggle" onclick="if(this.checked) { $('#assunto-field').slideDown(); populateAssuntoSelect(); }else{ $('#assunto-field').slideUp(); }"><span class="slider"></span></label>
+                                                <label class="switch ml-4"><input type="checkbox" id="isbnToggle" onclick="if(this.checked) { $('#assunto-field').slideDown(); setTimeout(function() { $('#assunto_livro').focus(); }, 100); }else{ $('#assunto-field').slideUp(); }"><span class="slider"></span></label>
                                             </div>
                                             <div id="assunto-field" style="display: none;" class="mt-4">
                                                 <label for="assunto_livro" class="block text-sm font-medium text-gray-600">Assunto do Livro</label>
@@ -2525,7 +2525,62 @@
                                                     <option value="003">003 - Sistemas</option>
                                                     <option value="004">004 - Ciência da Computação</option>
                                                     <option value="010">010 - Bibliografias e catálogos</option>
+                                                    <option value="015.81">015.81 - Bibliografia Brasil</option>
+                                                    <option value="020">020 - Biblioteconomia e ciência da informação</option>
+                                                    <option value="021">021 - Biblioteca e Sociedade</option>
+                                                    <option value="028">028 - Literatura e leitura complementar</option>
+                                                    <option value="028.5">028.5 - Literatura infantil</option>
+                                                    <option value="028.9">028.9 - Hábito de leitura</option>
+                                                    <option value="030">030 - Enciclopédias gerais</option>
+                                                    <option value="050">050 - Periódicos</option>
+                                                    <option value="060">060 - Organizações gerais (academias; fundações; associações)</option>
+                                                    <option value="069">069 - Museologia (Ciência)</option>
+                                                    <option value="069.22">069.22 - Museus</option>
+                                                    <option value="070">070 - Jornalismo; Publicidade; Jornais</option>
+                                                    <option value="070.172">070.172 - Jornais; mídia impressa</option>
+                                                    <option value="080">080 - Coleções de obras diversas sem assunto específico</option>
+                                                    <option value="090">090 - Manuscritos e Livros raros</option>
+                                                    <option value="100">100 - Filosofia e disciplinas relacionadas</option>
+                                                    <option value="107">107 - Estudo e ensino de Filosofia</option>
+                                                    <option value="110">110 - Metafísica</option>
+                                                    <option value="133">133 - Parapsicologia (Ocultismo; Espiritismo)</option>
+                                                    <option value="140">140 - Sistemas filosóficos</option>
+                                                    <option value="150">150 - Psicologia</option>
+                                                    <option value="156">156 - Psicologia comparativa</option>
+                                                    <option value="158">158 - Psicologia comportamental</option>
+                                                    <option value="158.1">158.1 - Auto-ajuda</option>
+                                                    <option value="160">160 - Lógica</option>
+                                                    <option value="170">170 - Ética (Moral filosófica)</option>
+                                                    <option value="174">174 - Ética profissional e ocupacional</option>
+                                                    <option value="200">200 - Religião</option>
+                                                    <option value="201">201 - Filosofia e Cristianismo</option>
+                                                    <option value="210">210 - Religião Natural; Filosofia e teoria da religião</option>
+                                                    <option value="211">211 - Deus</option>
+                                                    <option value="213">213 - Criação</option>
+                                                    <option value="220">220 - Bíblia</option>
+                                                    <option value="220.95">220.95 - História da Bíblia</option>
+                                                    <option value="230">230 - Cristianismo</option>
+                                                    <option value="240">240 - Moral cristã e teologia devocional</option>
+                                                    <option value="245">245 - Hinos sem música</option>
+                                                    <option value="250">250 - Congregações cristãs, prática e teologia pastoral</option>
+                                                    <option value="252">252 - Textos de sermões</option>
+                                                    <option value="260">260 - Teologia social e eclesiástica cristã</option>
+                                                    <option value="264.23">264.23 - Hinos</option>
+                                                    <option value="265">265 - Outros ritos; cerimônias e ordenações</option>
+                                                    <option value="266">266 - Missões</option>
+                                                    <option value="270">270 - História do cristianismo</option>
+                                                    <option value="280">280 - Denominações cristãs e seitas</option>
+                                                    <option value="290">290 - Outras religiões</option>
                                                     <option value="B869">B869 - Literatura brasileira</option>
+                                                    <option value="B869.1">B869.1 - Poesia brasileira</option>
+                                                    <option value="B869.2">B869.2 - Teatro brasileiro</option>
+                                                    <option value="B869.3">B869.3 - Romance; ficção e contos brasileiros</option>
+                                                    <option value="B869.4">B869.4 - Ensaios brasileiros</option>
+                                                    <option value="B869.5">B869.5 - Discursos brasileiros</option>
+                                                    <option value="B869.6">B869.6 - Cartas brasileiras</option>
+                                                    <option value="B869.7">B869.7 - Humor e sátira brasileiros</option>
+                                                    <option value="B869.8">B869.8 - Coletânea/Miscelânea</option>
+                                                    <option value="B869.9">B869.9 - História e crítica literária brasileira</option>
                                                 </select>
                                             </div>
                                         </div>
