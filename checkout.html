@@ -166,12 +166,60 @@
             background-color: white;
             border-radius: 2px;
             transition: all 0.3s ease;
+            box-shadow: 0 0 2px rgba(0,0,0,0.3); /* Adiciona uma sombra sutil para melhorar o contraste */
+        }
+        
+        /* Estilos para o menu mobile */
+        .bricks-mobile-menu-wrapper {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100vh;
+            background-color: #fff;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            z-index: 1001;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .bricks-mobile-menu-wrapper.active {
+            left: 0;
+        }
+        
+        .bricks-mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .bricks-mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Estado ativo para o corpo quando o menu mobile está aberto */
+        body.mobile-menu-active {
+            overflow: hidden;
         }
         
         /* --- Responsividade do Header --- */
         @media (max-width: 991px) {
             .header-nav, .header-btn { display: none; }
-            .menu-toggle { display: block; }
+        }
+        
+        /* Garantir que o botão hamburger só apareça em telas móveis */
+        @media (min-width: 768px) {
+            .bricks-mobile-menu-toggle { 
+                display: none !important; 
+            }
         }
 
         /* --- Estilos do Slider de Imagens --- */
@@ -1349,6 +1397,16 @@
             header.sticky.scrolling * {
                 background-color: transparent !important;
             }
+            
+            /* Garantir que o botão hambúrguer permaneça visível durante o scrolling */
+            header.on-scroll.sticky.scrolling .bricks-mobile-menu-toggle .bar-top,
+            header.on-scroll.sticky.scrolling .bricks-mobile-menu-toggle .bar-center,
+            header.on-scroll.sticky.scrolling .bricks-mobile-menu-toggle .bar-bottom,
+            header.sticky.scrolling .bricks-mobile-menu-toggle .bar-top,
+            header.sticky.scrolling .bricks-mobile-menu-toggle .bar-center,
+            header.sticky.scrolling .bricks-mobile-menu-toggle .bar-bottom {
+                background-color: white !important;
+            }
 
             header.sticky:not(.scrolling)>div.brxe-section {
                 min-height: var(--iw-header-min-height-size);
@@ -1380,7 +1438,14 @@
             @media (max-width: 767px) {
                 header.scrolling .bricks-mobile-menu-wrapper {
                     margin-top: -11px;
-                    ; margin-left: -11px;
+                    margin-left: -11px;
+                }
+                
+                /* Estilo específico para o botão hambúrguer durante scrolling */
+                header.scrolling .bricks-mobile-menu-toggle {
+                    display: flex !important;
+                    z-index: 1005;
+                    position: relative;
                 }
 
                 .iw-whatsapp-button {
@@ -2387,16 +2452,20 @@
         justify-content: space-between;
         align-items: center;
         width: 100%;
+        cursor: pointer;
     }
 
     /* O submenu em si, escondido por padrão */
     .bricks-mobile-menu .sub-menu {
-        display: none;
+        display: none; /* Escondido por padrão, será mostrado via JavaScript */
         list-style: none;
         padding: 5px 0 5px 20px; /* Adiciona indentação para um visual aninhado */
         margin: 0;
         background-color: rgba(0, 0, 0, 0.1); /* Fundo sutil para destacar */
         border-radius: 4px;
+        transition: all 0.3s ease;
+        max-height: 0;
+        overflow: hidden;
     }
 
     /* Links dentro do submenu */
@@ -2404,6 +2473,7 @@
         padding: 10px 15px;
         font-size: 1rem;
         font-weight: 400; /* Mais leve que o item principal */
+        display: block;
     }
 
     /* Ícone de seta */
@@ -2416,6 +2486,18 @@
     /* Classe para rotacionar a seta */
     .submenu-icon.rotate-180 {
         transform: rotate(180deg);
+    }
+    
+    /* Animação para o submenu */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .bricks-mobile-menu .sub-menu.active {
+        display: block;
+        max-height: 200px; /* Altura suficiente para acomodar os itens */
+        animation: fadeIn 0.3s ease-in-out forwards;
     }
 }
         </style>
@@ -2501,7 +2583,7 @@
                                         <a href="/#diferenciais" data-brx-anchor="true">Sobre Nós</a>
                                     </li>
                                     <li class="menu-item menu-item-type-custom menu-item-object-custom current_page_item menu-item-177 bricks-menu-item menu-item-has-children">
-                                        <a href="#">Minha Conta <i class="fas fa-chevron-down submenu-icon"></i></a>
+                                        <a href="javascript:void(0);">Minha Conta <i class="fas fa-chevron-down submenu-icon"></i></a>
                                         <ul class="sub-menu">
                                             <li><a href="/login">Entrar</a></li>
                                             <li><a href="/rastrear-pedido">Rastrear Meu Pedido</a></li>
@@ -2597,22 +2679,49 @@
                                     <h2 class="card-title"><span class="number">2</span>Detalhes da Capa</h2>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <label for="papel_capa" class="block text-sm font-medium text-gray-700 mb-1">Papel da Capa</label>
+                                            <label for="papel_capa" class="block text-sm font-medium text-gray-700 mb-1">
+                                                <span>Papel da Capa</span>
+                                                <i class="fas fa-question-circle info-icon" data-title="Papel da Capa" data-content="<b>Couchê:</b> Papel brilhante ideal para impressões coloridas de alta qualidade.<br><b>Triplex:</b> Papel mais encorpado, resistente e com boa qualidade de impressão.<br><b>Supremo:</b> Papel de alta qualidade com boa rigidez e acabamento superior."></i>
+                                            </label>
                                             <select id="papel_capa" class="mt-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"></select>
                                         </div>
-                                        <div id="orelha-container" style="display:none;">
-                                            <label for="orelha" class="block text-sm font-medium text-gray-700 mb-1">Orelha</label>
-                                            <select id="orelha" class="mt-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"></select>
-                                        </div>
+
                                         <div>
                                             <label for="acabamento_capa" class="block text-sm font-medium text-gray-700 mb-1">
                                                 <span>Laminação</span>
-                                                <i class="fas fa-question-circle info-icon" data-title="Acabamento da Capa" data-content="<b>Laminação Brilho:</b> Realça as cores e protege a capa. <br><b>Laminação Fosca:</b> Oferece um toque sofisticado, suave e reduz marcas de dedo."></i>
+                                                <i class="fas fa-question-circle info-icon" data-title="Laminação da Capa" data-content="<b>Laminação Brilho:</b> Realça as cores e protege a capa.<br><b>Laminação Fosca:</b> Oferece um toque sofisticado, suave e reduz marcas de dedo."></i>
                                             </label>
                                             <select id="acabamento_capa" class="mt-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
-                                                <option value="Brilho">Brilho</option>
-                                                <option value="Fosco">Fosco</option>
+                                                <option value="Brilho">Laminação Brilho</option>
+                                                <option value="Fosco">Laminação Fosca</option>
                                             </select>
+                                        </div>
+                                        <div id="orelha-container" style="display:none;">
+                                            <label for="orelha" class="block text-sm font-medium text-gray-700 mb-1">
+                                                <span>Orelha</span>
+                                                <i class="fas fa-question-circle info-icon" data-title="Orelha do Livro" data-image-uri="data:image/svg+xml;utf8,%3Csvg width='100%25' viewBox='0 0 400 200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='50' y='50' width='300' height='100' fill='%23f0f0f0' stroke='%232B4388' stroke-width='2'/%3E%3Cpath d='M50 50 L20 50 L20 150 L50 150' fill='none' stroke='%232B4388' stroke-width='2'/%3E%3Cpath d='M350 50 L380 50 L380 150 L350 150' fill='none' stroke='%232B4388' stroke-width='2'/%3E%3Ctext x='35' y='105' text-anchor='middle' font-family='Arial' font-size='12'%3EOrelha%3C/text%3E%3Ctext x='365' y='105' text-anchor='middle' font-family='Arial' font-size='12'%3EOrelha%3C/text%3E%3C/svg%3E" data-content="As orelhas são extensões dobráveis da capa que podem conter informações sobre o autor, sinopse ou outras informações promocionais. Preços: 6cm, 7cm, 8cm: R$1,46 por unidade. 10cm: R$2,08 por unidade."></i>
+                                            </label>
+                                            <select id="orelha" class="mt-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
+                                                <option value="sem">Sem Orelha</option>
+                                                <option value="6cm">6 cm</option>
+                                                <option value="7cm">7 cm</option>
+                                                <option value="8cm">8 cm</option>
+                                                <option value="10cm">10 cm</option>
+                                            </select>
+                                        </div>
+                                        <div id="cor_capa-container" style="display:none;">
+                                            <label for="cor_capa" class="block text-sm font-medium text-gray-700 mb-1">
+                                                <span>Cor da Capa Dura</span>
+                                                <i class="fas fa-question-circle info-icon" data-title="Cor da Capa Dura" data-content="Selecione a cor base para sua capa dura. Para capas personalizadas, selecione 'Personalizada' e envie sua arte."></i>
+                                            </label>
+                                            <select id="cor_capa" class="mt-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"></select>
+                                        </div>
+                                        <div id="guardas-container" style="display:none;">
+                                            <label for="guardas" class="block text-sm font-medium text-gray-700 mb-1">
+                                                <span>Guardas</span>
+                                                <i class="fas fa-question-circle info-icon" data-title="Guardas" data-image-uri="data:image/svg+xml;utf8,%3Csvg width='100%25' viewBox='0 0 400 200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='100' y='50' width='200' height='100' fill='%23f0f0f0' stroke='%232B4388' stroke-width='2'/%3E%3Crect x='80' y='50' width='20' height='100' fill='%23A7C7E7' stroke='%232B4388' stroke-width='1'/%3E%3Crect x='300' y='50' width='20' height='100' fill='%23A7C7E7' stroke='%232B4388' stroke-width='1'/%3E%3Ctext x='90' y='105' text-anchor='middle' font-family='Arial' font-size='12' transform='rotate(-90 90 105)'%3EGuarda%3C/text%3E%3Ctext x='310' y='105' text-anchor='middle' font-family='Arial' font-size='12' transform='rotate(90 310 105)'%3EGuarda%3C/text%3E%3C/svg%3E" data-content="As guardas são as folhas que conectam o miolo do livro à capa dura. Podem ser brancas, coloridas ou com padrões impressos."></i>
+                                            </label>
+                                            <select id="guardas" class="mt-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"></select>
                                         </div>
                                     </div>
                                 </div>
@@ -3086,37 +3195,96 @@
     <script>
         const bookModels = {
             'Capa Couchê / Triplex': {
-                tamanhos: ["14x21cm", "16x23cm", "21x29.7cm"],
+                tamanhos: ["14x21cm", "16x23cm", "21x29,7cm"],
                 lombada: {
                     options: { "pur": "PUR (Lombada Quadrada)", "wire-o": "Wire-o", "espiral": "Espiral" },
                     rule: (val, pages) => (val === 'pur' && pages < 60) ? 'Lombada PUR requer no mínimo 60 páginas.' : ''
                 },
-                papelCapa: ["Couchê Brilho 250g", "Couchê Fosco 250g", "Triplex 300g"],
-                orelha: { hidden: false, options: { "sem": "Sem Orelha", "6cm": "6 cm", "7cm": "7 cm", "8cm": "8 cm", "10cm": "10 cm" } },
-                papelMiolo: ["Off-white 80g", "Offset 75g", "Couchê 115g"],
+                papelCapa: [
+                    "Couchê Brilho 250g",
+                    "Couchê Fosco 250g",
+                    "Triplex 300g"
+                ],
+                acabamentoCapa: {
+                    options: {
+                        "Brilho": "Laminação Brilho",
+                        "Fosco": "Laminação Fosca"
+                    }
+                },
+
+                orelha: { 
+                    hidden: false, 
+                    options: { 
+                        "sem": "Sem Orelha", 
+                        "6cm": "6 cm", 
+                        "7cm": "7 cm", 
+                        "8cm": "8 cm", 
+                        "10cm": "10 cm" 
+                    } 
+                },
+                papelMiolo: ["Offset 80g", "Offset 75g", "Couchê 115g"],
                 paginaRule: "O total de páginas (P&B + Coloridas) deve ser um número par.",
                 paginaRuleCheck: (pages) => pages % 2 === 0,
                 shrink: { "adicional": "Shrink Adicional", "plastificacao": "Plastificação Individual" }
             },
             'Capa Dura': {
-                tamanhos: ["14x21cm", "16x23cm", "21x29.7cm"],
+                tamanhos: ["14x21cm", "16x23cm", "21x29,7cm"],
                 lombada: {
-                    options: { "pur": "PUR (Lombada Quadrada)", "wire-o": "Wire-o", "espiral": "Espiral" },
-                    rule: (val, pages) => (val === 'pur' && pages < 60) ? 'Lombada PUR requer no mínimo 60 páginas.' : ''
+                    options: { "pur": "PUR (Lombada Quadrada)" },
+                    rule: (val, pages) => (pages < 60) ? 'Capa dura requer no mínimo 60 páginas.' : ''
                 },
-                papelCapa: [], // Not applicable
+                papelCapa: [
+                    "Percalux", 
+                    "Tecido", 
+                    "Couro Sintético",
+                    "Personalizada"
+                ],
+                acabamentoCapa: {
+                    options: {
+                        "Brilho": "Laminação Brilho",
+                        "Fosco": "Laminação Fosca"
+                    }
+                },
+                corCapa: {
+                    options: {
+                        "Preto": "Preto",
+                        "Azul Marinho": "Azul Marinho",
+                        "Vermelho": "Vermelho",
+                        "Verde": "Verde",
+                        "Bordô": "Bordô",
+                        "Personalizada": "Personalizada (Enviar Arte)"
+                    }
+                },
+                guardas: {
+                    options: {
+                        "Branca": "Branca",
+                        "Colorida": "Colorida (Enviar Arte)",
+                        "Impressa": "Impressa com Padrão"
+                    }
+                },
                 orelha: { hidden: true },
-                papelMiolo: ["Off-white 80g", "Offset 75g", "Couchê 115g"],
+                papelMiolo: ["Offset 80g", "Offset 75g", "Couchê 115g"],
                 paginaRule: "O total de páginas (P&B + Coloridas) deve ser um número par.",
                 paginaRuleCheck: (pages) => pages % 2 === 0,
                 shrink: { "adicional": "Shrink Adicional", "plastificacao": "Plastificação Individual" }
             },
             'Grampo (Canoa)': {
-                tamanhos: ["14x21cm", "16x23cm", "21x29.7cm", "21x14.8cm (A5 Paisagem)", "20x20cm"],
+                tamanhos: ["14x21cm", "16x23cm", "21x29,7cm"],
                 lombada: { fixed: "canoa" },
-                papelCapa: ["Couchê", "Triplex"],
+                papelCapa: [
+                    "Couchê Brilho 250g",
+                    "Couchê Fosco 250g",
+                    "Triplex 300g"
+                ],
+                acabamentoCapa: {
+                    options: {
+                        "Brilho": "Laminação Brilho",
+                        "Fosco": "Laminação Fosca"
+                    }
+                },
+
                 orelha: { hidden: true },
-                papelMiolo: ["Off-white 80g", "Offset 75g", "Offset 90g", "Couchê 115g"],
+                papelMiolo: ["Offset 80g", "Offset 75g", "Couchê 115g"],
                 paginaRule: "O total de páginas (P&B + Coloridas) deve ser múltiplo de 4.",
                 paginaRuleCheck: (pages) => pages % 4 === 0,
                 shrink: { "adicional": "Shrink Adicional" }
@@ -19523,13 +19691,43 @@ const produtosSimplificado = {
             } else {
                 papelCapaDiv.hide();
             }
+            
+            // Acabamento da Capa (Laminação, Verniz, etc.)
+            const acabamentoCapaDiv = $('#acabamento_capa').parent();
+            if (model.acabamentoCapa && model.acabamentoCapa.options) {
+                populateSelect('#acabamento_capa', model.acabamentoCapa.options);
+                acabamentoCapaDiv.show();
+            } else {
+                acabamentoCapaDiv.hide();
+            }
+            
+
+            
+            // Cor da Capa (para capa dura)
+            const corCapaDiv = $('#cor_capa-container');
+            if (model.corCapa && model.corCapa.options) {
+                populateSelect('#cor_capa', model.corCapa.options);
+                corCapaDiv.show();
+            } else {
+                corCapaDiv.hide();
+            }
+            
+            // Guardas (para capa dura)
+            const guardasDiv = $('#guardas-container');
+            if (model.guardas && model.guardas.options) {
+                populateSelect('#guardas', model.guardas.options);
+                guardasDiv.show();
+            } else {
+                guardasDiv.hide();
+            }
 
             // Orelha
             const orelhaContainer = $('#orelha-container');
             if (model.orelha.hidden) {
                 orelhaContainer.hide();
             } else {
-                populateSelect('#orelha', model.orelha.options);
+                // Não usamos populateSelect para orelha pois já definimos as opções diretamente no HTML
+                // com os preços incluídos
                 orelhaContainer.show();
             }
             
@@ -19560,10 +19758,35 @@ const produtosSimplificado = {
         // Log para debug
         console.log("Buscando preço para:", {tipoProduto, tamanho, tipoPapel, tonalidade, quantidade, numPaginas});
         
+        // Se não houver páginas, retorna 0
+        if (!numPaginas || numPaginas <= 0) {
+            console.log("Número de páginas inválido:", numPaginas);
+            return 0;
+        }
+        
         // Verifica se o produto existe
         if (!produtosSimplificado.produtos[tipoProduto]) {
             console.log("Produto não encontrado:", tipoProduto);
-            return 0;
+            
+            // Tenta encontrar um produto similar
+            const produtos = Object.keys(produtosSimplificado.produtos);
+            let produtoEncontrado = null;
+            
+            for (const produto of produtos) {
+                if (produto.includes(tipoProduto) || tipoProduto.includes(produto)) {
+                    produtoEncontrado = produto;
+                    console.log(`Produto similar encontrado: "${tipoProduto}" -> "${produtoEncontrado}"`);
+                    break;
+                }
+            }
+            
+            if (produtoEncontrado) {
+                tipoProduto = produtoEncontrado;
+            } else {
+                // Se não encontrar produto similar, retorna valor padrão
+                console.log("Nenhum produto similar encontrado. Usando valor padrão.");
+                return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
+            }
         }
 
         // Tenta encontrar o tamanho exato ou uma versão compatível
@@ -19581,7 +19804,9 @@ const produtosSimplificado = {
                 const tamanhos = Object.keys(produtosSimplificado.produtos[tipoProduto]);
                 console.log("Tamanhos disponíveis:", tamanhos);
                 console.log("Tamanho não encontrado:", tamanho, "para", tipoProduto);
-                return 0;
+                
+                // Retorna valor padrão
+                return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
             }
         }
 
@@ -19589,14 +19814,50 @@ const produtosSimplificado = {
         if (!produtosSimplificado.produtos[tipoProduto][tamanhoKey].precos_por_pagina[tipoPapel]) {
             console.log("Tipo de papel não encontrado:", tipoPapel);
             console.log("Papéis disponíveis:", Object.keys(produtosSimplificado.produtos[tipoProduto][tamanhoKey].precos_por_pagina));
-            return 0;
+            
+            // Tenta encontrar um tipo de papel similar
+            const papeis = Object.keys(produtosSimplificado.produtos[tipoProduto][tamanhoKey].precos_por_pagina);
+            let papelEncontrado = null;
+            
+            for (const papel of papeis) {
+                if (papel.includes(tipoPapel) || tipoPapel.includes(papel)) {
+                    papelEncontrado = papel;
+                    console.log(`Papel similar encontrado: "${tipoPapel}" -> "${papelEncontrado}"`);
+                    break;
+                }
+            }
+            
+            if (papelEncontrado) {
+                tipoPapel = papelEncontrado;
+            } else {
+                // Se não encontrar papel similar, retorna valor padrão
+                return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
+            }
         }
 
         // Verifica se a tonalidade existe para o tipo de papel
         if (!produtosSimplificado.produtos[tipoProduto][tamanhoKey].precos_por_pagina[tipoPapel][tonalidade]) {
             console.log("Tonalidade não encontrada:", tonalidade);
             console.log("Tonalidades disponíveis:", Object.keys(produtosSimplificado.produtos[tipoProduto][tamanhoKey].precos_por_pagina[tipoPapel]));
-            return 0;
+            
+            // Tenta encontrar uma tonalidade similar
+            const tonalidades = Object.keys(produtosSimplificado.produtos[tipoProduto][tamanhoKey].precos_por_pagina[tipoPapel]);
+            let tonalidadeEncontrada = null;
+            
+            for (const ton of tonalidades) {
+                if (ton.includes(tonalidade) || tonalidade.includes(ton)) {
+                    tonalidadeEncontrada = ton;
+                    console.log(`Tonalidade similar encontrada: "${tonalidade}" -> "${tonalidadeEncontrada}"`);
+                    break;
+                }
+            }
+            
+            if (tonalidadeEncontrada) {
+                tonalidade = tonalidadeEncontrada;
+            } else {
+                // Se não encontrar tonalidade similar, retorna valor padrão
+                return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
+            }
         }
 
         // Encontra a faixa de quantidade correta (menor ou igual à quantidade solicitada)
@@ -19615,7 +19876,7 @@ const produtosSimplificado = {
         // Não encontrou faixa compatível com a quantidade
         if (faixaQuantidade === undefined) {
             console.log("Faixa de quantidade não encontrada para", quantidade);
-            return 0;
+            return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
         }
 
         // Encontra a faixa de páginas correta (menor ou igual ao número de páginas)
@@ -19633,7 +19894,7 @@ const produtosSimplificado = {
         // Não encontrou faixa compatível com o número de páginas
         if (faixaPaginas === undefined) {
             console.log("Faixa de páginas não encontrada para", numPaginas);
-            return 0;
+            return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
         }
 
         const preco = precosPorPagina[faixaPaginas];
@@ -19641,7 +19902,8 @@ const produtosSimplificado = {
         return preco;
     } catch (error) {
         console.error("Erro ao obter preço por página:", error);
-        return 0;
+        // Retorna valor padrão em caso de erro
+        return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
     }
 }
 /**
@@ -19691,8 +19953,11 @@ const produtosSimplificado = {
                 modelo: document.getElementById('modelo_livro'),
                 formato: document.getElementById('formato'),
                 papelCapa: document.getElementById('papel_capa'),
-                orelha: document.getElementById('orelha'),
+
                 acabamentoCapa: document.getElementById('acabamento_capa'),
+                orelha: document.getElementById('orelha'),
+                corCapa: document.getElementById('cor_capa'),
+                guardas: document.getElementById('guardas'),
                 lombada: document.getElementById('lombada'),
                 miolo: document.getElementById('miolo'),
                 paginasPb: document.getElementById('paginas_pb'),
@@ -19715,8 +19980,11 @@ const produtosSimplificado = {
                 modelo: elements.modelo?.value || '',
                 formato: elements.formato?.value || '',
                 papelCapa: $(elements.papelCapa).parent().is(':visible') ? elements.papelCapa?.value : 'N/A',
+
+                acabamentoCapa: $(elements.acabamentoCapa).parent().is(':visible') ? elements.acabamentoCapa?.value : 'N/A',
                 orelha: $(elements.orelha).parent().is(':visible') ? elements.orelha?.value : 'N/A',
-                acabamentoCapa: elements.acabamentoCapa?.value || '',
+                corCapa: $(elements.corCapa).parent().is(':visible') ? elements.corCapa?.value : 'N/A',
+                guardas: $(elements.guardas).parent().is(':visible') ? elements.guardas?.value : 'N/A',
                 lombada: elements.lombada?.value || '',
                 miolo: elements.miolo?.value || '',
                 paginas_pb: parseInt(elements.paginasPb?.value) || 0,
@@ -19755,6 +20023,71 @@ const produtosSimplificado = {
         if (produtosSimplificado.produtos[modeloKey]) {
             console.log("Tamanhos disponíveis para", modeloKey + ":", 
                 Object.keys(produtosSimplificado.produtos[modeloKey]));
+                
+            // Verificar se o formato existe e ajustar se necessário
+            let formatoAjustado = values.formato;
+            const formatosDisponiveis = Object.keys(produtosSimplificado.produtos[modeloKey]);
+            
+            if (!formatosDisponiveis.includes(formatoAjustado)) {
+                // Tenta encontrar um formato similar
+                for (const formato of formatosDisponiveis) {
+                    if (formato.includes(formatoAjustado) || formatoAjustado.includes(formato)) {
+                        formatoAjustado = formato;
+                        console.log(`Formato ajustado: "${values.formato}" -> "${formatoAjustado}"`);
+                        break;
+                    }
+                }
+                
+                // Se ainda não encontrou, tenta remover ou adicionar "cm"
+                if (!formatosDisponiveis.includes(formatoAjustado)) {
+                    if (formatoAjustado.endsWith("cm")) {
+                        const semCm = formatoAjustado.replace("cm", "").trim();
+                        if (formatosDisponiveis.includes(semCm)) {
+                            formatoAjustado = semCm;
+                            console.log(`Formato ajustado (removido cm): "${values.formato}" -> "${formatoAjustado}"`);
+                        }
+                    } else {
+                        const comCm = formatoAjustado + "cm";
+                        if (formatosDisponiveis.includes(comCm)) {
+                            formatoAjustado = comCm;
+                            console.log(`Formato ajustado (adicionado cm): "${values.formato}" -> "${formatoAjustado}"`);
+                        }
+                    }
+                }
+            }
+            
+            // Atualiza o formato para uso nos cálculos
+            values.formato = formatoAjustado;
+            
+            // Verificar se o tipo de papel (miolo) existe e ajustar se necessário
+            if (produtosSimplificado.produtos[modeloKey][formatoAjustado] && 
+                produtosSimplificado.produtos[modeloKey][formatoAjustado].precos_por_pagina) {
+                
+                const tiposDePapelDisponiveis = Object.keys(produtosSimplificado.produtos[modeloKey][formatoAjustado].precos_por_pagina);
+                console.log("Tipos de papel disponíveis:", tiposDePapelDisponiveis);
+                
+                if (!tiposDePapelDisponiveis.includes(values.miolo)) {
+                    // Tenta encontrar um tipo de papel similar
+                    let mioloAjustado = values.miolo;
+                    
+                    for (const papel of tiposDePapelDisponiveis) {
+                        if (papel.includes(mioloAjustado) || mioloAjustado.includes(papel)) {
+                            mioloAjustado = papel;
+                            console.log(`Miolo ajustado: "${values.miolo}" -> "${mioloAjustado}"`);
+                            break;
+                        }
+                    }
+                    
+                    // Se não encontrou similar, usa o primeiro disponível
+                    if (!tiposDePapelDisponiveis.includes(mioloAjustado) && tiposDePapelDisponiveis.length > 0) {
+                        mioloAjustado = tiposDePapelDisponiveis[0];
+                        console.log(`Miolo não encontrado, usando o primeiro disponível: "${values.miolo}" -> "${mioloAjustado}"`);
+                    }
+                    
+                    // Atualiza o miolo para uso nos cálculos
+                    values.miolo = mioloAjustado;
+                }
+            }
         }
     } else {
         console.log("Aviso: produtosSimplificado ou produtos não está definido");
@@ -19772,21 +20105,61 @@ const produtosSimplificado = {
     ) || 0.05; // Valor padrão caso não encontre
     
     // Obtém preço por página para colorido
+    // Primeiro verifica se a tonalidade "Colorido" existe, caso contrário tenta "Cor" ou outras variações
+    let tonalidadeColorida = "Colorido";
+    
+    // Verifica se existe uma estrutura para verificar as tonalidades disponíveis
+    if (produtosSimplificado && produtosSimplificado.produtos && 
+        produtosSimplificado.produtos[modeloKey] && 
+        produtosSimplificado.produtos[modeloKey][values.formato] && 
+        produtosSimplificado.produtos[modeloKey][values.formato].precos_por_pagina && 
+        produtosSimplificado.produtos[modeloKey][values.formato].precos_por_pagina[values.miolo]) {
+        
+        const tonalidadesDisponiveis = Object.keys(produtosSimplificado.produtos[modeloKey][values.formato].precos_por_pagina[values.miolo]);
+        console.log("Tonalidades disponíveis para colorido:", tonalidadesDisponiveis);
+        
+        // Se não encontrar "Colorido", tenta outras variações
+        if (!tonalidadesDisponiveis.includes("Colorido")) {
+            const alternativas = ["Colorida", "Cor", "COLOR", "Color", "Cores", "COR", "COLORIDO"];
+            for (const alt of alternativas) {
+                if (tonalidadesDisponiveis.includes(alt)) {
+                    tonalidadeColorida = alt;
+                    console.log(`Usando tonalidade alternativa para colorido: "${tonalidadeColorida}"`);
+                    break;
+                }
+            }
+        }
+    }
+    
     const precoPorPaginaCL = obterPrecoPorPagina(
         modeloKey, // Usar o modelo ajustado
         values.formato,
         values.miolo,
-        "Colorido",
+        tonalidadeColorida,
         values.quantidade,
         values.paginas_cl
     ) || 0.20; // Valor padrão caso não encontre
+    
+    // Log detalhado para debug do cálculo de páginas coloridas
+    console.log("DEBUG - Cálculo de páginas coloridas:");
+    console.log("Modelo: " + modeloKey);
+    console.log("Formato: " + values.formato);
+    console.log("Miolo: " + values.miolo);
+    console.log("Tonalidade: Colorido");
+    console.log("Quantidade: " + values.quantidade);
+    console.log("Páginas coloridas: " + values.paginas_cl);
+    console.log("Preço por página colorida: " + precoPorPaginaCL);
     
     // Calcular preços usando a tabela de preços simplificada
     const precoPaginasPB = precoPorPaginaPB * values.paginas_pb;
     const precoPaginasCL = precoPorPaginaCL * values.paginas_cl;
     
+    // Log do cálculo final
+    console.log("Preço total páginas P&B: " + precoPaginasPB + " (" + values.paginas_pb + " páginas x " + precoPorPaginaPB + ")");
+    console.log("Preço total páginas coloridas: " + precoPaginasCL + " (" + values.paginas_cl + " páginas x " + precoPorPaginaCL + ")");
+    
     // Cálculo de preços para campos adicionais
-    // Valor fixo para o ISBN
+    // Calculando o valor do ISBN usando o JSON
     const isbnToggle = document.getElementById('isbnToggle');
     const isbnChecked = isbnToggle ? isbnToggle.checked : false;
     const assuntoLivro = document.getElementById('assunto_livro');
@@ -19802,50 +20175,298 @@ const produtosSimplificado = {
         }
     }
     
-    const isbnCost = (values.isbn || isbnChecked) ? 149.90 : 0;
+    // Calculando o valor do ISBN a partir do JSON campos -> ISBN -> TRUE
+    let isbnCost = 0;
+    if (values.isbn || isbnChecked) {
+        try {
+            if (produtosSimplificado && produtosSimplificado.campos && produtosSimplificado.campos["ISBN"]) {
+                const isbnOptions = produtosSimplificado.campos["ISBN"];
+                if (isbnOptions["TRUE"]) {
+                    const isbnConfig = isbnOptions["TRUE"];
+                    // Aplicando a fórmula: preco_fixo + (preco_por_unidade * qtd) + (preco_por_pagina * num_pags)
+                    isbnCost = (isbnConfig.preco_fixo || 0) + 
+                              (isbnConfig.preco_por_unidade || 0) * values.quantidade + 
+                              (isbnConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                    console.log("ISBN calculado pelo JSON:", isbnCost);
+                } else {
+                    isbnCost = 149.90;
+                    console.log("Opção TRUE não encontrada no JSON para ISBN, usando valor padrão:", isbnCost);
+                }
+            } else {
+                isbnCost = 149.90;
+                console.log("Campo ISBN não encontrado no JSON, usando valor padrão:", isbnCost);
+            }
+        } catch (error) {
+            isbnCost = 149.90;
+            console.error("Erro ao calcular ISBN pelo JSON:", error);
+            console.log("Usando valor padrão para ISBN:", isbnCost);
+        }
+    }
+    
     console.log("ISBN está marcado? (values.isbn):", values.isbn);
     console.log("ISBN está marcado? (isbnToggle.checked):", isbnChecked);
     console.log("Assunto do livro:", assuntoTexto);
     console.log("Valor do ISBN:", isbnCost);
     
-    // Cálculo para orelha
+    // Cálculo para orelha usando o JSON
     let orelhaCost = 0;
     if (values.orelha && values.orelha !== 'N/A' && values.orelha !== 'sem') {
-        // Valor da orelha baseado no tamanho (calculando como um adicional por unidade)
-        const valoresOrelha = {
-            '6cm': 2.50,
-            '7cm': 3.00,
-            '8cm': 3.50,
-            '10cm': 4.50
-        };
-        orelhaCost = (valoresOrelha[values.orelha] || 0) * values.quantidade;
-        console.log(`Orelha: ${values.orelha} - Custo: ${orelhaCost}`);
-    }
-    
-    // Cálculo para serviços de arte (capa/diagramação)
-    let designerCost = 0;
-    if (values.designer && values.designerOption) {
-        if (values.designerOption === 'somente_capa') {
-            designerCost = 485.00; // Valor fixo para criação de capa
-            console.log("Serviço de arte: Criação de Capa Profissional - R$485,00");
-        } else if (values.designerOption === 'somente_diagramação') {
-            designerCost = 3.50 * (values.paginas_pb + values.paginas_cl); // R$3,50 por página
-            console.log("Serviço de arte: Diagramação do Miolo - R$3,50 x", (values.paginas_pb + values.paginas_cl), "=", designerCost);
-        } else if (values.designerOption === 'capa_diagramação') {
-            designerCost = 485.00 + (3.50 * (values.paginas_pb + values.paginas_cl)); // Capa + diagramação
-            console.log("Serviço de arte: Capa + Diagramação - R$485,00 + (R$3,50 x", (values.paginas_pb + values.paginas_cl), ") =", designerCost);
+        try {
+            // Construir o nome do tipo de orelha conforme estrutura do JSON
+            const tipoOrelha = `Colorido com orelha ${values.orelha}`;
+            let orelhaConfig = null;
+            
+            console.log(`Buscando configuração para orelha: "${tipoOrelha}"`);
+            
+            // Verificar se o JSON tem a estrutura esperada
+            if (produtosSimplificado && produtosSimplificado.campos) {
+                console.log("Campos disponíveis no JSON:", Object.keys(produtosSimplificado.campos));
+                
+                // Primeiro verificar em "Frente e Verso"
+                if (produtosSimplificado.campos["Frente e Verso"]) {
+                    console.log("Opções em 'Frente e Verso':", Object.keys(produtosSimplificado.campos["Frente e Verso"]));
+                    
+                    if (produtosSimplificado.campos["Frente e Verso"][tipoOrelha]) {
+                        orelhaConfig = produtosSimplificado.campos["Frente e Verso"][tipoOrelha];
+                        console.log(`Encontrada configuração para orelha em "Frente e Verso": ${tipoOrelha}`);
+                        console.log("Configuração:", JSON.stringify(orelhaConfig));
+                    }
+                }
+                
+                // Caso não encontre, verificar em "Frente"
+                if (!orelhaConfig && produtosSimplificado.campos["Frente"]) {
+                    console.log("Opções em 'Frente':", Object.keys(produtosSimplificado.campos["Frente"]));
+                    
+                    if (produtosSimplificado.campos["Frente"][tipoOrelha]) {
+                        orelhaConfig = produtosSimplificado.campos["Frente"][tipoOrelha];
+                        console.log(`Encontrada configuração para orelha em "Frente": ${tipoOrelha}`);
+                        console.log("Configuração:", JSON.stringify(orelhaConfig));
+                    }
+                }
+            }
+            
+            // Se encontrou configuração, calcular com a fórmula do JSON
+            if (orelhaConfig) {
+                orelhaCost = (orelhaConfig.preco_fixo || 0) + 
+                           (orelhaConfig.preco_por_unidade || 0) * values.quantidade +
+                           (orelhaConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                console.log(`Orelha calculada pelo JSON: ${tipoOrelha}`);
+                console.log(`- Preço fixo: ${orelhaConfig.preco_fixo || 0}`);
+                console.log(`- Preço por unidade: ${orelhaConfig.preco_por_unidade || 0} x ${values.quantidade} = ${(orelhaConfig.preco_por_unidade || 0) * values.quantidade}`);
+                console.log(`- Preço por página: ${orelhaConfig.preco_por_pagina || 0} x ${(values.paginas_pb + values.paginas_cl)} = ${(orelhaConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl)}`);
+                console.log(`- Custo total: ${orelhaCost}`);
+            } else {
+                // Fallback para valores fixos caso não encontre no JSON
+                console.log("Configuração de orelha não encontrada no JSON, usando valores fixos.");
+                
+                // Usar os valores que estão no JSON (conforme verificado)
+                const valoresOrelha = {
+                    '6cm': 1.46,
+                    '7cm': 1.46,
+                    '8cm': 1.46,
+                    '10cm': 2.08
+                };
+                
+                orelhaCost = (valoresOrelha[values.orelha] || 0) * values.quantidade;
+                console.log(`Orelha (valores fixos baseados no JSON): ${values.orelha} - ${valoresOrelha[values.orelha]} x ${values.quantidade} = ${orelhaCost}`);
+            }
+        } catch (error) {
+            // Em caso de erro, usar valores fixos de fallback
+            console.error("Erro ao calcular orelha pelo JSON:", error);
+            
+            // Usar os valores que estão no JSON (conforme verificado)
+            const valoresOrelha = {
+                '6cm': 1.46,
+                '7cm': 1.46,
+                '8cm': 1.46,
+                '10cm': 2.08
+            };
+            
+            orelhaCost = (valoresOrelha[values.orelha] || 0) * values.quantidade;
+            console.log(`Orelha (fallback após erro): ${values.orelha} - ${valoresOrelha[values.orelha]} x ${values.quantidade} = ${orelhaCost}`);
         }
     }
     
-    // Valor fixo para o Shrink
-    const shrinkCost = values.shrink_active ? 0.30 * values.quantidade : 0;
-    console.log("Shrink:", values.shrink_active ? "Embalagem plástica individual" : "Nenhum", "- Custo:", shrinkCost);
+    // Cálculo para serviços de arte (capa/diagramação) usando o JSON
+    let designerCost = 0;
+    if (values.designer && values.designerOption) {
+        try {
+        if (values.designerOption === 'somente_capa') {
+                // Buscar no JSON o campo "Criação de capa profissional" com opção "TRUE"
+                if (produtosSimplificado && produtosSimplificado.campos && 
+                    produtosSimplificado.campos["Criação de capa profissional"] && 
+                    produtosSimplificado.campos["Criação de capa profissional"]["TRUE"]) {
+                    
+                    const capaConfig = produtosSimplificado.campos["Criação de capa profissional"]["TRUE"];
+                    designerCost = (capaConfig.preco_fixo || 0) + 
+                                  (capaConfig.preco_por_unidade || 0) * values.quantidade +
+                                  (capaConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                    console.log(`Serviço de arte: Criação de Capa Profissional (JSON) - R$${designerCost.toFixed(2)}`);
+                } else {
+                    // Fallback para valor fixo
+                    designerCost = 485.00;
+                    console.log("Serviço de arte: Criação de Capa Profissional (valor fixo) - R$485,00");
+                }
+        } else if (values.designerOption === 'somente_diagramação') {
+                // Buscar no JSON o campo "Diagramação do miolo" com opção "TRUE"
+                if (produtosSimplificado && produtosSimplificado.campos && 
+                    produtosSimplificado.campos["Diagramação do miolo"] && 
+                    produtosSimplificado.campos["Diagramação do miolo"]["TRUE"]) {
+                    
+                    const diagConfig = produtosSimplificado.campos["Diagramação do miolo"]["TRUE"];
+                    designerCost = (diagConfig.preco_fixo || 0) + 
+                                  (diagConfig.preco_por_unidade || 0) * values.quantidade +
+                                  (diagConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                    console.log(`Serviço de arte: Diagramação do Miolo (JSON) - R$${designerCost.toFixed(2)}`);
+                } else {
+                    // Fallback para cálculo tradicional
+                    designerCost = 3.50 * (values.paginas_pb + values.paginas_cl);
+                    console.log("Serviço de arte: Diagramação do Miolo (valor fixo) - R$3,50 x", (values.paginas_pb + values.paginas_cl), "=", designerCost);
+                }
+        } else if (values.designerOption === 'capa_diagramação') {
+                // Combinar os dois serviços (capa e diagramação)
+                let custoCapa = 0;
+                let custoDiagramacao = 0;
+                
+                // Calcular custo da capa
+                if (produtosSimplificado && produtosSimplificado.campos && 
+                    produtosSimplificado.campos["Criação de capa profissional"] && 
+                    produtosSimplificado.campos["Criação de capa profissional"]["TRUE"]) {
+                    
+                    const capaConfig = produtosSimplificado.campos["Criação de capa profissional"]["TRUE"];
+                    custoCapa = (capaConfig.preco_fixo || 0) + 
+                               (capaConfig.preco_por_unidade || 0) * values.quantidade +
+                               (capaConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                } else {
+                    custoCapa = 485.00;
+                }
+                
+                // Calcular custo da diagramação
+                if (produtosSimplificado && produtosSimplificado.campos && 
+                    produtosSimplificado.campos["Diagramação do miolo"] && 
+                    produtosSimplificado.campos["Diagramação do miolo"]["TRUE"]) {
+                    
+                    const diagConfig = produtosSimplificado.campos["Diagramação do miolo"]["TRUE"];
+                    custoDiagramacao = (diagConfig.preco_fixo || 0) + 
+                                      (diagConfig.preco_por_unidade || 0) * values.quantidade +
+                                      (diagConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                } else {
+                    custoDiagramacao = 3.50 * (values.paginas_pb + values.paginas_cl);
+                }
+                
+                // Somar os dois custos
+                designerCost = custoCapa + custoDiagramacao;
+                console.log(`Serviço de arte: Capa (R$${custoCapa.toFixed(2)}) + Diagramação (R$${custoDiagramacao.toFixed(2)}) = R$${designerCost.toFixed(2)}`);
+            }
+        } catch (error) {
+            console.error("Erro ao calcular serviços de designer:", error);
+            // Fallback para valores fixos em caso de erro
+            if (values.designerOption === 'somente_capa') {
+                designerCost = 485.00;
+                console.log("Serviço de arte (fallback): Criação de Capa Profissional - R$485,00");
+            } else if (values.designerOption === 'somente_diagramação') {
+                designerCost = 3.50 * (values.paginas_pb + values.paginas_cl);
+                console.log("Serviço de arte (fallback): Diagramação do Miolo - R$3,50 x", (values.paginas_pb + values.paginas_cl), "=", designerCost);
+            } else if (values.designerOption === 'capa_diagramação') {
+                designerCost = 485.00 + (3.50 * (values.paginas_pb + values.paginas_cl));
+                console.log("Serviço de arte (fallback): Capa + Diagramação - R$485,00 + (R$3,50 x", (values.paginas_pb + values.paginas_cl), ") =", designerCost);
+            }
+        }
+    }
     
-    // Valor fixo para marcador
-    const marcadorCost = values.marcador ? 1.50 * values.quantidade : 0; // R$1,50 por unidade, independente do tipo
-    // Valor fixo para revisão ortográfica: R$19,21 por página
-    const correcaoCost = values.correcao ? 19.21 * (values.paginas_pb + values.paginas_cl) : 0;
-    console.log("Revisão Ortográfica:", values.correcao ? "Sim" : "Não", "- Páginas:", (values.paginas_pb + values.paginas_cl), "- Custo:", correcaoCost);
+    // Cálculo para Shrink usando o JSON
+    let shrinkCost = 0;
+    if (values.shrink_active) {
+        try {
+            // Determinar o tipo de shrink selecionado
+            const tipoShrink = values.shrink_type === 'adicional' ? 'Shrink Adicional' : 'Sem Shrink';
+            
+            // Buscar configuração no JSON
+            if (produtosSimplificado && produtosSimplificado.campos && 
+                produtosSimplificado.campos["Shrink"] && 
+                produtosSimplificado.campos["Shrink"][tipoShrink]) {
+                
+                const shrinkConfig = produtosSimplificado.campos["Shrink"][tipoShrink];
+                shrinkCost = (shrinkConfig.preco_fixo || 0) + 
+                            (shrinkConfig.preco_por_unidade || 0) * values.quantidade +
+                            (shrinkConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                console.log(`Shrink (JSON): ${tipoShrink} - Custo: R$${shrinkCost.toFixed(2)}`);
+            } else {
+                // Fallback para valor fixo
+                shrinkCost = 0.30 * values.quantidade;
+                console.log(`Shrink (valor fixo): Embalagem plástica individual - Custo: R$${shrinkCost.toFixed(2)}`);
+            }
+        } catch (error) {
+            console.error("Erro ao calcular shrink:", error);
+            // Fallback para valor fixo em caso de erro
+            shrinkCost = 0.30 * values.quantidade;
+            console.log(`Shrink (fallback): Embalagem plástica individual - Custo: R$${shrinkCost.toFixed(2)}`);
+        }
+    } else {
+        console.log("Sem shrink selecionado - Custo: R$0.00");
+    }
+    
+    // Cálculo para marcador usando o JSON
+    let marcadorCost = 0;
+    if (values.marcador) {
+        try {
+            // Mapear o tipo de marcador para o nome no JSON
+            const tipoMarcador = values.tipoMarcador === 'frente' ? 'Somente frente' : 
+                                (values.tipoMarcador === 'frente_verso' ? 'Frente e verso' : 'Nenhum');
+            
+            // Buscar configuração no JSON
+            if (produtosSimplificado && produtosSimplificado.campos && 
+                produtosSimplificado.campos["Marcador de página"] && 
+                produtosSimplificado.campos["Marcador de página"][tipoMarcador]) {
+                
+                const marcadorConfig = produtosSimplificado.campos["Marcador de página"][tipoMarcador];
+                marcadorCost = (marcadorConfig.preco_fixo || 0) + 
+                              (marcadorConfig.preco_por_unidade || 0) * values.quantidade +
+                              (marcadorConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                console.log(`Marcador (JSON): ${tipoMarcador} - Custo: R$${marcadorCost.toFixed(2)}`);
+            } else {
+                // Fallback para valor fixo
+                marcadorCost = 1.50 * values.quantidade;
+                console.log(`Marcador (valor fixo): ${values.tipoMarcador || 'Padrão'} - Custo: R$${marcadorCost.toFixed(2)}`);
+            }
+        } catch (error) {
+            console.error("Erro ao calcular marcador:", error);
+            // Fallback para valor fixo em caso de erro
+            marcadorCost = 1.50 * values.quantidade;
+            console.log(`Marcador (fallback): ${values.tipoMarcador || 'Padrão'} - Custo: R$${marcadorCost.toFixed(2)}`);
+        }
+    } else {
+        console.log("Sem marcador selecionado - Custo: R$0.00");
+    }
+    
+    // Cálculo para revisão ortográfica usando o JSON
+    let correcaoCost = 0;
+    if (values.correcao) {
+        try {
+            // Buscar configuração no JSON
+            if (produtosSimplificado && produtosSimplificado.campos && 
+                produtosSimplificado.campos["Revisão ortográfica"] && 
+                produtosSimplificado.campos["Revisão ortográfica"]["TRUE"]) {
+                
+                const revisaoConfig = produtosSimplificado.campos["Revisão ortográfica"]["TRUE"];
+                correcaoCost = (revisaoConfig.preco_fixo || 0) + 
+                              (revisaoConfig.preco_por_unidade || 0) * values.quantidade +
+                              (revisaoConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                console.log(`Revisão Ortográfica (JSON): ${values.paginas_pb + values.paginas_cl} páginas - Custo: R$${correcaoCost.toFixed(2)}`);
+            } else {
+                // Fallback para valor fixo
+                correcaoCost = 19.21 * (values.paginas_pb + values.paginas_cl);
+                console.log(`Revisão Ortográfica (valor fixo): ${values.paginas_pb + values.paginas_cl} páginas - Custo: R$${correcaoCost.toFixed(2)}`);
+            }
+        } catch (error) {
+            console.error("Erro ao calcular revisão ortográfica:", error);
+            // Fallback para valor fixo em caso de erro
+            correcaoCost = 19.21 * (values.paginas_pb + values.paginas_cl);
+            console.log(`Revisão Ortográfica (fallback): ${values.paginas_pb + values.paginas_cl} páginas - Custo: R$${correcaoCost.toFixed(2)}`);
+        }
+    } else {
+        console.log("Sem revisão ortográfica selecionada - Custo: R$0.00");
+    }
     let shippingCost = 0;
     try {
         if (values.shippingOption && produtosSimplificado && produtosSimplificado.campos) {
@@ -19893,8 +20514,18 @@ const produtosSimplificado = {
     resumo += `<hr class="my-2">`;
     if (values.formato) resumo += `<div class="flex justify-between"><span>Formato</span><span class="font-semibold">${values.formato} ${values.orientacao}</span></div>`;
     if (values.lombada) resumo += `<div class="flex justify-between"><span>Acabamento</span><span class="font-semibold">${$('#lombada option:selected').text()}</span></div>`;
+    
+    // Detalhes da capa
+    resumo += `<hr class="my-1"><div class="font-bold text-gray-600">Detalhes da Capa:</div>`;
     if (values.papelCapa !== 'N/A') resumo += `<div class="flex justify-between"><span>Papel da Capa</span><span class="font-semibold">${values.papelCapa}</span></div>`;
+    
+         if (values.acabamentoCapa !== 'N/A') resumo += `<div class="flex justify-between"><span>Laminação</span><span class="font-semibold">Laminação ${values.acabamentoCapa}</span></div>`;
     if (values.orelha !== 'N/A' && values.orelha !== 'sem') resumo += `<div class="flex justify-between"><span>Orelha</span><span class="font-semibold">${values.orelha}</span></div>`;
+    if (values.corCapa !== 'N/A') resumo += `<div class="flex justify-between"><span>Cor da Capa</span><span class="font-semibold">${values.corCapa}</span></div>`;
+    if (values.guardas !== 'N/A') resumo += `<div class="flex justify-between"><span>Guardas</span><span class="font-semibold">${values.guardas}</span></div>`;
+    
+    // Detalhes do miolo
+    resumo += `<hr class="my-1"><div class="font-bold text-gray-600">Miolo:</div>`;
     if (values.miolo) resumo += `<div class="flex justify-between"><span>Papel do Miolo</span><span class="font-semibold">${values.miolo}</span></div>`;
     if (values.paginas_pb > 0 || values.paginas_cl > 0) resumo += `<div class="flex justify-between"><span>Páginas</span><span class="font-semibold">${values.paginas_pb} P&B + ${values.paginas_cl} Cor</span></div>`;
     if (values.quantidade > 0) resumo += `<div class="flex justify-between"><span>Quantidade</span><span class="font-semibold">${values.quantidade} un.</span></div>`;
@@ -19910,7 +20541,11 @@ const produtosSimplificado = {
     
     if (orelhaCost > 0) {
         console.log("Adicionando orelha ao resumo:", orelhaCost);
-        resumo += `<div class="flex justify-between"><span>Orelha ${values.orelha}</span><span class="font-semibold">${orelhaCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
+        const precoUnitarioOrelha = values.quantidade > 0 ? orelhaCost / values.quantidade : 0;
+        resumo += `<div class="flex justify-between">
+            <span>Orelha ${values.orelha} (${precoUnitarioOrelha.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} × ${values.quantidade})</span>
+            <span class="font-semibold">${orelhaCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+        </div>`;
     }
     if (values.designer && values.designerOption) resumo += `<div class="flex justify-between"><span>${labels.designer[values.designerOption]}</span><span class="font-semibold">${designerCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
     if (values.shrink_active) resumo += `<div class="flex justify-between"><span>${labels.shrink[values.shrink_type]}</span><span class="font-semibold">${shrinkCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>`;
@@ -19954,7 +20589,7 @@ const produtosSimplificado = {
                 applyModelConfiguration($(this).val());
             });
 
-            const allInputs = ['#modelo_livro', '#formato', '#papel_capa', '#orelha', '#acabamento_capa', '#lombada', '#miolo', '#paginas_pb', '#paginas_cl', '#quantidade', '#nome_livro', '#shrink_option_type', '#assunto_livro', '#assunto_outro', 'input[name="shipping_option"]', 'input[name="pagamento"]', 'input[type="checkbox"]', 'select'];
+            const allInputs = ['#modelo_livro', '#formato', '#papel_capa', '#acabamento_capa', '#orelha', '#cor_capa', '#guardas', '#lombada', '#miolo', '#paginas_pb', '#paginas_cl', '#quantidade', '#nome_livro', '#shrink_option_type', '#assunto_livro', '#assunto_outro', 'input[name="shipping_option"]', 'input[name="pagamento"]', 'input[type="checkbox"]', 'select'];
             $(allInputs.join(', ')).on('input change', updateSummary);
             
             $('.orientation-btn').on('click', function() {
@@ -20169,22 +20804,35 @@ const produtosSimplificado = {
             });
 
             // Script para funcionalidade do menu mobile
-            const menuToggleBtn = document.getElementById('menu-toggle-btn');
-            const closeBtn = document.getElementById('close-btn');
-            const overlay = document.getElementById('overlay');
-            const mobileNavLinks = document.querySelectorAll('#mobile-nav a');
-
-            function toggleMenu() {
-                document.body.classList.toggle('mobile-nav-active');
-            }
-
-            menuToggleBtn.addEventListener('click', toggleMenu);
-            closeBtn.addEventListener('click', toggleMenu);
-            overlay.addEventListener('click', toggleMenu);
+            const menuToggleBtn = document.querySelector('.bricks-mobile-menu-toggle');
+            const mobileMenuWrapper = document.querySelector('.bricks-mobile-menu-wrapper');
+            const mobileMenuOverlay = document.querySelector('.bricks-mobile-menu-overlay');
             
-            mobileNavLinks.forEach(link => {
-                link.addEventListener('click', toggleMenu);
-            });
+            if (menuToggleBtn && mobileMenuWrapper && mobileMenuOverlay) {
+                function toggleMobileMenu() {
+                    document.body.classList.toggle('mobile-menu-active');
+                    mobileMenuWrapper.classList.toggle('active');
+                    mobileMenuOverlay.classList.toggle('active');
+                    
+                    // Atualiza o atributo aria-expanded
+                    const isExpanded = menuToggleBtn.getAttribute('aria-expanded') === 'true';
+                    menuToggleBtn.setAttribute('aria-expanded', !isExpanded);
+                }
+                
+                menuToggleBtn.addEventListener('click', toggleMobileMenu);
+                mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
+                
+                // Fechar o menu ao clicar em links do menu mobile
+                const mobileMenuLinks = document.querySelectorAll('.bricks-mobile-menu a');
+                mobileMenuLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        // Não fechar se for um link com submenu
+                        if (!this.parentElement.classList.contains('menu-item-has-children')) {
+                            toggleMobileMenu();
+                        }
+                    });
+                });
+            }
         });
 
         function validateStep(step) {
@@ -21208,9 +21856,56 @@ const produtosSimplificado = {
             window.addEventListener('scroll', handleScroll);
             // Verifica o estado inicial
             handleScroll();
+            
+            // Funcionalidade de toggle para o submenu "Minha Conta" no menu mobile
+            const mobileMenuItems = document.querySelectorAll('.bricks-mobile-menu .menu-item-has-children > a');
+            
+            // Garantir que todos os submenus comecem fechados
+            document.querySelectorAll('.bricks-mobile-menu .sub-menu').forEach(submenu => {
+                submenu.classList.remove('active');
+                submenu.style.display = 'none';
+            });
+            
+            // Adicionar ícones de seta se não existirem
+            mobileMenuItems.forEach(item => {
+                if (!item.querySelector('.submenu-icon')) {
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-chevron-down submenu-icon';
+                    item.appendChild(icon);
+                }
+                
+                item.addEventListener('click', function(e) {
+                    e.preventDefault(); // Impede a navegação ao clicar
+                    
+                    // Encontra o submenu associado a este item
+                    const submenu = this.nextElementSibling;
+                    const icon = this.querySelector('.submenu-icon');
+                    
+                    // Toggle da visibilidade do submenu
+                    if (submenu.classList.contains('active')) {
+                        // Fechar o submenu
+                        submenu.classList.remove('active');
+                        if (icon) icon.classList.remove('rotate-180');
+                        
+                        // Usar setTimeout para permitir que a animação ocorra antes de esconder
+                        setTimeout(() => {
+                            submenu.style.display = 'none';
+                        }, 300); // Tempo igual à duração da transição
+                    } else {
+                        // Abrir o submenu
+                        submenu.style.display = 'block';
+                        
+                        // Pequeno delay para garantir que o display: block seja aplicado antes da animação
+                        setTimeout(() => {
+                            submenu.classList.add('active');
+                            if (icon) icon.classList.add('rotate-180');
+                        }, 10);
+                    }
+                });
+            });
         });
     </script>
-    
+
     <script>
         // Funcionalidade para o upload de arquivos
         const dropArea = document.getElementById('dropArea');
@@ -21232,12 +21927,56 @@ const produtosSimplificado = {
             dropArea.classList.remove('bg-indigo-50');
         });
         
-        dropArea.addEventListener('drop', (e) => {<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95c15dd177cc48a0',t:'MTc1MTk5NjQyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-
-
-
-
-
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('border-indigo-500');
+            dropArea.classList.remove('bg-indigo-50');
+            
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+        
+        fileInput.addEventListener('change', () => {
+            const files = fileInput.files;
+            handleFiles(files);
+        });
+        
+        function handleFiles(files) {
+            if (files.length > 0) {
+                fileList.innerHTML = '';
+                
+                for (const file of files) {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'flex items-center p-2 border-b border-gray-200';
+                    
+                    const fileIcon = document.createElement('div');
+                    fileIcon.className = 'mr-2 text-indigo-500';
+                    fileIcon.innerHTML = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path></svg>';
+                    
+                    const fileInfo = document.createElement('div');
+                    fileInfo.className = 'flex-1';
+                    fileInfo.innerHTML = `
+                        <p class="text-sm font-medium text-gray-900">${file.name}</p>
+                        <p class="text-xs text-gray-500">${(file.size / 1024).toFixed(2)} KB</p>
+                    `;
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'ml-2 text-gray-400 hover:text-red-500';
+                    removeBtn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>';
+                    removeBtn.addEventListener('click', () => {
+                        fileItem.remove();
+                    });
+                    
+                    fileItem.appendChild(fileIcon);
+                    fileItem.appendChild(fileInfo);
+                    fileItem.appendChild(removeBtn);
+                    fileList.appendChild(fileItem);
+                }
+                
+                fileList.classList.remove('hidden');
+            }
+        }
+    </script>
 </html>
 
 

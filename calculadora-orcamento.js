@@ -2,37 +2,37 @@
 //2929
 const bookModels = {
     'Capa Couchê / Triplex': {
-        tamanhos: ["14x21cm", "16x23cm", "21x29.7cm"],
+        tamanhos: ["14x21cm", "16x23cm", "21x29,7cm"],
         lombada: {
             options: { "pur": "PUR (Lombada Quadrada)", "wire-o": "Wire-o", "espiral": "Espiral" },
             rule: (val, pages) => (val === 'pur' && pages < 60) ? 'Lombada PUR requer no mínimo 60 páginas.' : ''
         },
         papelCapa: ["Couchê Brilho 250g", "Couchê Fosco 250g", "Triplex 300g"],
         orelha: { hidden: false, options: { "sem": "Sem Orelha", "6cm": "6 cm", "7cm": "7 cm", "8cm": "8 cm", "10cm": "10 cm" } },
-        papelMiolo: ["Off-white 80g", "Offset 75g", "Couchê 115g"],
+        papelMiolo: ["Offset 80g", "Offset 75g", "Couchê 115g"],
         paginaRule: "O total de páginas (P&B + Coloridas) deve ser um número par.",
         paginaRuleCheck: (pages) => pages % 2 === 0,
         shrink: { "adicional": "Shrink Adicional", "plastificacao": "Plastificação Individual" }
     },
     'Capa Dura': {
-        tamanhos: ["14x21cm", "16x23cm", "21x29.7cm"],
+        tamanhos: ["14x21cm", "16x23cm", "21x29,7cm"],
         lombada: {
             options: { "pur": "PUR (Lombada Quadrada)", "wire-o": "Wire-o", "espiral": "Espiral" },
             rule: (val, pages) => (val === 'pur' && pages < 60) ? 'Lombada PUR requer no mínimo 60 páginas.' : ''
         },
         papelCapa: [], // Not applicable
         orelha: { hidden: true },
-        papelMiolo: ["Off-white 80g", "Offset 75g", "Couchê 115g"],
+        papelMiolo: ["Offset 80g", "Offset 75g", "Couchê 115g"],
         paginaRule: "O total de páginas (P&B + Coloridas) deve ser um número par.",
         paginaRuleCheck: (pages) => pages % 2 === 0,
         shrink: { "adicional": "Shrink Adicional", "plastificacao": "Plastificação Individual" }
     },
     'Grampo (Canoa)': {
-        tamanhos: ["14x21cm", "16x23cm", "21x29.7cm", "21x14.8cm (A5 Paisagem)", "20x20cm"],
+        tamanhos: ["14x21cm", "16x23cm", "21x29,7cm"],
         lombada: { fixed: "canoa" },
-        papelCapa: ["Couchê", "Triplex"],
+        papelCapa: ["Couchê Brilho 250g", "Couchê Fosco 250g", "Triplex 300g"],
         orelha: { hidden: true },
-        papelMiolo: ["Off-white 80g", "Offset 75g", "Offset 90g", "Couchê 115g"],
+        papelMiolo: ["Offset 80g", "Offset 75g", "Couchê 115g"],
         paginaRule: "O total de páginas (P&B + Coloridas) deve ser múltiplo de 4.",
         paginaRuleCheck: (pages) => pages % 4 === 0,
         shrink: { "adicional": "Shrink Adicional" }
@@ -16420,7 +16420,16 @@ function populateSelect(selectId, options, selectedValue = null) {
     if (Array.isArray(options)) {
         options.forEach(opt => select.append($('<option>').val(opt).text(opt)));
     } else {
-        $.each(options, (val, text) => select.append($('<option>').val(val).text(text)));
+        // Para o seletor de orelha, não incluir valores de preço
+        if (selectId === '#orelha') {
+            $.each(options, (val, text) => {
+                // Remover qualquer texto de preço entre parênteses
+                const cleanText = text.replace(/\s*\([^)]*\)/g, '');
+                select.append($('<option>').val(val).text(cleanText));
+            });
+        } else {
+            $.each(options, (val, text) => select.append($('<option>').val(val).text(text)));
+        }
     }
     if(selectedValue) select.val(selectedValue);
     
@@ -16529,10 +16538,35 @@ function obterPrecoPorPagina(tipoProduto, tamanho, tipoPapel, tonalidade, quanti
         // Log para debug
         console.log("Buscando preço para:", {tipoProduto, tamanho, tipoPapel, tonalidade, quantidade, numPaginas});
         
+        // Se não houver páginas, retorna 0
+        if (!numPaginas || numPaginas <= 0) {
+            console.log("Número de páginas inválido:", numPaginas);
+            return 0;
+        }
+        
         // Verifica se o produto existe
         if (!produtosSimplificado.produtos[tipoProduto]) {
             console.log("Produto não encontrado:", tipoProduto);
-            return 0;
+            
+            // Tenta encontrar um produto similar
+            const produtos = Object.keys(produtosSimplificado.produtos);
+            let produtoEncontrado = null;
+            
+            for (const produto of produtos) {
+                if (produto.includes(tipoProduto) || tipoProduto.includes(produto)) {
+                    produtoEncontrado = produto;
+                    console.log(`Produto similar encontrado: "${tipoProduto}" -> "${produtoEncontrado}"`);
+                    break;
+                }
+            }
+            
+            if (produtoEncontrado) {
+                tipoProduto = produtoEncontrado;
+            } else {
+                // Se não encontrar produto similar, retorna valor padrão
+                console.log("Nenhum produto similar encontrado. Usando valor padrão.");
+                return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
+            }
         }
 
         // Tenta encontrar o tamanho exato ou uma versão compatível
@@ -16550,7 +16584,9 @@ function obterPrecoPorPagina(tipoProduto, tamanho, tipoPapel, tonalidade, quanti
                 const tamanhos = Object.keys(produtosSimplificado.produtos[tipoProduto]);
                 console.log("Tamanhos disponíveis:", tamanhos);
                 console.log("Tamanho não encontrado:", tamanho, "para", tipoProduto);
-                return 0;
+                
+                // Retorna valor padrão
+                return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
             }
         }
 
@@ -16558,14 +16594,50 @@ function obterPrecoPorPagina(tipoProduto, tamanho, tipoPapel, tonalidade, quanti
         if (!produtosSimplificado.produtos[tipoProduto][tamanhoKey].precos_por_pagina[tipoPapel]) {
             console.log("Tipo de papel não encontrado:", tipoPapel);
             console.log("Papéis disponíveis:", Object.keys(produtosSimplificado.produtos[tipoProduto][tamanhoKey].precos_por_pagina));
-            return 0;
+            
+            // Tenta encontrar um tipo de papel similar
+            const papeis = Object.keys(produtosSimplificado.produtos[tipoProduto][tamanhoKey].precos_por_pagina);
+            let papelEncontrado = null;
+            
+            for (const papel of papeis) {
+                if (papel.includes(tipoPapel) || tipoPapel.includes(papel)) {
+                    papelEncontrado = papel;
+                    console.log(`Papel similar encontrado: "${tipoPapel}" -> "${papelEncontrado}"`);
+                    break;
+                }
+            }
+            
+            if (papelEncontrado) {
+                tipoPapel = papelEncontrado;
+            } else {
+                // Se não encontrar papel similar, retorna valor padrão
+                return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
+            }
         }
 
         // Verifica se a tonalidade existe para o tipo de papel
         if (!produtosSimplificado.produtos[tipoProduto][tamanhoKey].precos_por_pagina[tipoPapel][tonalidade]) {
             console.log("Tonalidade não encontrada:", tonalidade);
             console.log("Tonalidades disponíveis:", Object.keys(produtosSimplificado.produtos[tipoProduto][tamanhoKey].precos_por_pagina[tipoPapel]));
-            return 0;
+            
+            // Tenta encontrar uma tonalidade similar
+            const tonalidades = Object.keys(produtosSimplificado.produtos[tipoProduto][tamanhoKey].precos_por_pagina[tipoPapel]);
+            let tonalidadeEncontrada = null;
+            
+            for (const ton of tonalidades) {
+                if (ton.includes(tonalidade) || tonalidade.includes(ton)) {
+                    tonalidadeEncontrada = ton;
+                    console.log(`Tonalidade similar encontrada: "${tonalidade}" -> "${tonalidadeEncontrada}"`);
+                    break;
+                }
+            }
+            
+            if (tonalidadeEncontrada) {
+                tonalidade = tonalidadeEncontrada;
+            } else {
+                // Se não encontrar tonalidade similar, retorna valor padrão
+                return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
+            }
         }
 
         // Encontra a faixa de quantidade correta (menor ou igual à quantidade solicitada)
@@ -16584,7 +16656,7 @@ function obterPrecoPorPagina(tipoProduto, tamanho, tipoPapel, tonalidade, quanti
         // Não encontrou faixa compatível com a quantidade
         if (faixaQuantidade === undefined) {
             console.log("Faixa de quantidade não encontrada para", quantidade);
-            return 0;
+            return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
         }
 
         // Encontra a faixa de páginas correta (menor ou igual ao número de páginas)
@@ -16602,7 +16674,7 @@ function obterPrecoPorPagina(tipoProduto, tamanho, tipoPapel, tonalidade, quanti
         // Não encontrou faixa compatível com o número de páginas
         if (faixaPaginas === undefined) {
             console.log("Faixa de páginas não encontrada para", numPaginas);
-            return 0;
+            return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
         }
 
         const preco = precosPorPagina[faixaPaginas];
@@ -16610,7 +16682,8 @@ function obterPrecoPorPagina(tipoProduto, tamanho, tipoPapel, tonalidade, quanti
         return preco;
     } catch (error) {
         console.error("Erro ao obter preço por página:", error);
-        return 0;
+        // Retorna valor padrão em caso de erro
+        return tonalidade === "Colorido" || tonalidade === "Colorida" ? 0.20 : 0.05;
     }
 }
 
@@ -16733,6 +16806,71 @@ function updateSummary() {
     if (produtosSimplificado.produtos[modeloKey]) {
         console.log("Tamanhos disponíveis para", modeloKey + ":", 
             Object.keys(produtosSimplificado.produtos[modeloKey]));
+            
+        // Verificar se o formato existe e ajustar se necessário
+        let formatoAjustado = values.formato;
+        const formatosDisponiveis = Object.keys(produtosSimplificado.produtos[modeloKey]);
+        
+        if (!formatosDisponiveis.includes(formatoAjustado)) {
+            // Tenta encontrar um formato similar
+            for (const formato of formatosDisponiveis) {
+                if (formato.includes(formatoAjustado) || formatoAjustado.includes(formato)) {
+                    formatoAjustado = formato;
+                    console.log(`Formato ajustado: "${values.formato}" -> "${formatoAjustado}"`);
+                    break;
+                }
+            }
+            
+            // Se ainda não encontrou, tenta remover ou adicionar "cm"
+            if (!formatosDisponiveis.includes(formatoAjustado)) {
+                if (formatoAjustado.endsWith("cm")) {
+                    const semCm = formatoAjustado.replace("cm", "").trim();
+                    if (formatosDisponiveis.includes(semCm)) {
+                        formatoAjustado = semCm;
+                        console.log(`Formato ajustado (removido cm): "${values.formato}" -> "${formatoAjustado}"`);
+                    }
+                } else {
+                    const comCm = formatoAjustado + "cm";
+                    if (formatosDisponiveis.includes(comCm)) {
+                        formatoAjustado = comCm;
+                        console.log(`Formato ajustado (adicionado cm): "${values.formato}" -> "${formatoAjustado}"`);
+                    }
+                }
+            }
+        }
+        
+        // Atualiza o formato para uso nos cálculos
+        values.formato = formatoAjustado;
+        
+        // Verificar se o tipo de papel (miolo) existe e ajustar se necessário
+        if (produtosSimplificado.produtos[modeloKey][formatoAjustado] && 
+            produtosSimplificado.produtos[modeloKey][formatoAjustado].precos_por_pagina) {
+            
+            const tiposDePapelDisponiveis = Object.keys(produtosSimplificado.produtos[modeloKey][formatoAjustado].precos_por_pagina);
+            console.log("Tipos de papel disponíveis:", tiposDePapelDisponiveis);
+            
+            if (!tiposDePapelDisponiveis.includes(values.miolo)) {
+                // Tenta encontrar um tipo de papel similar
+                let mioloAjustado = values.miolo;
+                
+                for (const papel of tiposDePapelDisponiveis) {
+                    if (papel.includes(mioloAjustado) || mioloAjustado.includes(papel)) {
+                        mioloAjustado = papel;
+                        console.log(`Miolo ajustado: "${values.miolo}" -> "${mioloAjustado}"`);
+                        break;
+                    }
+                }
+                
+                // Se não encontrou similar, usa o primeiro disponível
+                if (!tiposDePapelDisponiveis.includes(mioloAjustado) && tiposDePapelDisponiveis.length > 0) {
+                    mioloAjustado = tiposDePapelDisponiveis[0];
+                    console.log(`Miolo não encontrado, usando o primeiro disponível: "${values.miolo}" -> "${mioloAjustado}"`);
+                }
+                
+                // Atualiza o miolo para uso nos cálculos
+                values.miolo = mioloAjustado;
+            }
+        }
     }
     
     if (values.isbn) $('#assunto-field').slideDown(); else $('#assunto-field').slideUp();
@@ -16752,32 +16890,128 @@ function updateSummary() {
     ) || 0.05; // Valor padrão caso não encontre
     
     // Obtém preço por página para colorido
+    // Primeiro verifica se a tonalidade "Colorido" existe, caso contrário tenta "Cor" ou outras variações
+    let tonalidadeColorida = "Colorido";
+    
+    // Verifica se existe uma estrutura para verificar as tonalidades disponíveis
+    if (produtosSimplificado && produtosSimplificado.produtos && 
+        produtosSimplificado.produtos[modeloKey] && 
+        produtosSimplificado.produtos[modeloKey][values.formato] && 
+        produtosSimplificado.produtos[modeloKey][values.formato].precos_por_pagina && 
+        produtosSimplificado.produtos[modeloKey][values.formato].precos_por_pagina[values.miolo]) {
+        
+        const tonalidadesDisponiveis = Object.keys(produtosSimplificado.produtos[modeloKey][values.formato].precos_por_pagina[values.miolo]);
+        console.log("Tonalidades disponíveis para colorido:", tonalidadesDisponiveis);
+        
+        // Se não encontrar "Colorido", tenta outras variações
+        if (!tonalidadesDisponiveis.includes("Colorido")) {
+            const alternativas = ["Colorida", "Cor", "COLOR", "Color", "Cores", "COR", "COLORIDO"];
+            for (const alt of alternativas) {
+                if (tonalidadesDisponiveis.includes(alt)) {
+                    tonalidadeColorida = alt;
+                    console.log(`Usando tonalidade alternativa para colorido: "${tonalidadeColorida}"`);
+                    break;
+                }
+            }
+        }
+    }
+    
     const precoPorPaginaCL = obterPrecoPorPagina(
         modeloKey, // Usar o modelo ajustado
         values.formato,
         values.miolo,
-        "Colorido",
+        tonalidadeColorida,
         values.quantidade,
         values.paginas_cl
     ) || 0.20; // Valor padrão caso não encontre
+    
+    // Log detalhado para debug do cálculo de páginas coloridas
+    console.log("DEBUG - Cálculo de páginas coloridas:");
+    console.log("Modelo: " + modeloKey);
+    console.log("Formato: " + values.formato);
+    console.log("Miolo: " + values.miolo);
+    console.log("Tonalidade: Colorido");
+    console.log("Quantidade: " + values.quantidade);
+    console.log("Páginas coloridas: " + values.paginas_cl);
+    console.log("Preço por página colorida: " + precoPorPaginaCL);
     
     // Calcular preços usando a tabela de preços simplificada
     const precoPaginasPB = precoPorPaginaPB * values.paginas_pb;
     const precoPaginasCL = precoPorPaginaCL * values.paginas_cl;
     
+    // Log do cálculo final
+    console.log("Preço total páginas P&B: " + precoPaginasPB + " (" + values.paginas_pb + " páginas x " + precoPorPaginaPB + ")");
+    console.log("Preço total páginas coloridas: " + precoPaginasCL + " (" + values.paginas_cl + " páginas x " + precoPorPaginaCL + ")");
+    
     // Cálculo de preços para campos adicionais
     // Valor fixo para o ISBN
     const isbnToggle = document.getElementById('isbnToggle');
     const isbnChecked = isbnToggle ? isbnToggle.checked : false;
-    const isbnCost = (values.isbn || isbnChecked) ? 149.90 : 0;
+    // Calculando o valor do ISBN a partir do JSON campos -> ISBN -> TRUE
+    let isbnCost = 0;
+    if (values.isbn || isbnChecked) {
+        try {
+            if (produtosSimplificado && produtosSimplificado.campos && produtosSimplificado.campos["ISBN"]) {
+                const isbnOptions = produtosSimplificado.campos["ISBN"];
+                if (isbnOptions["TRUE"]) {
+                    const isbnConfig = isbnOptions["TRUE"];
+                    // Aplicando a fórmula: preco_fixo + (preco_por_unidade * qtd) + (preco_por_pagina * num_pags)
+                    isbnCost = (isbnConfig.preco_fixo || 0) + 
+                              (isbnConfig.preco_por_unidade || 0) * values.quantidade + 
+                              (isbnConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                    console.log("ISBN calculado pelo JSON:", isbnCost);
+                } else {
+                    isbnCost = 149.90;
+                    console.log("Opção TRUE não encontrada no JSON para ISBN, usando valor padrão:", isbnCost);
+                }
+            } else {
+                isbnCost = 149.90;
+                console.log("Campo ISBN não encontrado no JSON, usando valor padrão:", isbnCost);
+            }
+        } catch (error) {
+            isbnCost = 149.90;
+            console.error("Erro ao calcular ISBN pelo JSON:", error);
+            console.log("Usando valor padrão para ISBN:", isbnCost);
+        }
+    }
+    
     console.log("ISBN está marcado? (values.isbn):", values.isbn);
     console.log("ISBN está marcado? (isbnToggle.checked):", isbnChecked);
     console.log("Valor do ISBN:", isbnCost);
     
-    // Cálculo para orelha
+    // Cálculo para orelha usando o JSON
     let orelhaCost = 0;
     if (values.orelha && values.orelha !== 'N/A' && values.orelha !== 'sem') {
-        // Valor da orelha baseado no tamanho (calculando como um adicional por unidade)
+        try {
+            // Construir o nome do tipo de orelha conforme estrutura do JSON
+            const tipoOrelha = `Colorido com orelha ${values.orelha}`;
+            let orelhaConfig = null;
+            
+            // Primeiro verificar em "Frente e Verso"
+            if (produtosSimplificado && produtosSimplificado.campos && 
+                produtosSimplificado.campos["Frente e Verso"] && 
+                produtosSimplificado.campos["Frente e Verso"][tipoOrelha]) {
+                
+                orelhaConfig = produtosSimplificado.campos["Frente e Verso"][tipoOrelha];
+                console.log(`Encontrada configuração para orelha em "Frente e Verso": ${tipoOrelha}`);
+            } 
+            // Caso não encontre, verificar em "Frente"
+            else if (produtosSimplificado && produtosSimplificado.campos && 
+                    produtosSimplificado.campos["Frente"] && 
+                    produtosSimplificado.campos["Frente"][tipoOrelha]) {
+                
+                orelhaConfig = produtosSimplificado.campos["Frente"][tipoOrelha];
+                console.log(`Encontrada configuração para orelha em "Frente": ${tipoOrelha}`);
+            }
+            
+            // Se encontrou configuração, calcular com a fórmula do JSON
+            if (orelhaConfig) {
+                orelhaCost = (orelhaConfig.preco_fixo || 0) + 
+                           (orelhaConfig.preco_por_unidade || 0) * values.quantidade +
+                           (orelhaConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                console.log(`Orelha calculada pelo JSON: ${tipoOrelha} - Custo: ${orelhaCost}`);
+            } else {
+                // Fallback para valores fixos caso não encontre no JSON
         const valoresOrelha = {
             '6cm': 2.50,
             '7cm': 3.00,
@@ -16785,33 +17019,202 @@ function updateSummary() {
             '10cm': 4.50
         };
         orelhaCost = (valoresOrelha[values.orelha] || 0) * values.quantidade;
-        console.log(`Orelha: ${values.orelha} - Custo: ${orelhaCost}`);
-    }
-    
-    // Cálculo para serviços de arte (capa/diagramação)
-    let designerCost = 0;
-    if (values.designer && values.designerOption) {
-        if (values.designerOption === 'somente_capa') {
-            designerCost = 485.00; // Valor fixo para criação de capa
-            console.log("Serviço de arte: Criação de Capa Profissional - R$485,00");
-        } else if (values.designerOption === 'somente_diagramação') {
-            designerCost = 3.50 * (values.paginas_pb + values.paginas_cl); // R$3,50 por página
-            console.log("Serviço de arte: Diagramação do Miolo - R$3,50 x", (values.paginas_pb + values.paginas_cl), "=", designerCost);
-        } else if (values.designerOption === 'capa_diagramação') {
-            designerCost = 485.00 + (3.50 * (values.paginas_pb + values.paginas_cl)); // Capa + diagramação
-            console.log("Serviço de arte: Capa + Diagramação - R$485,00 + (R$3,50 x", (values.paginas_pb + values.paginas_cl), ") =", designerCost);
+                console.log(`Orelha (fallback para valores fixos): ${values.orelha} - Custo: ${orelhaCost}`);
+            }
+        } catch (error) {
+            // Em caso de erro, usar valores fixos de fallback
+            const valoresOrelha = {
+                '6cm': 2.50,
+                '7cm': 3.00,
+                '8cm': 3.50,
+                '10cm': 4.50
+            };
+            orelhaCost = (valoresOrelha[values.orelha] || 0) * values.quantidade;
+            console.error("Erro ao calcular orelha pelo JSON:", error);
+            console.log(`Orelha (fallback após erro): ${values.orelha} - Custo: ${orelhaCost}`);
         }
     }
     
-    // Valor fixo para o Shrink
-    const shrinkCost = values.shrink_active ? 0.30 * values.quantidade : 0;
-    console.log("Shrink:", values.shrink_active ? "Embalagem plástica individual" : "Nenhum", "- Custo:", shrinkCost);
+    // Cálculo para serviços de arte (capa/diagramação) usando o JSON
+    let designerCost = 0;
+    if (values.designer && values.designerOption) {
+        try {
+        if (values.designerOption === 'somente_capa') {
+                // Buscar no JSON o campo "Criação de capa profissional" com opção "TRUE"
+                if (produtosSimplificado && produtosSimplificado.campos && 
+                    produtosSimplificado.campos["Criação de capa profissional"] && 
+                    produtosSimplificado.campos["Criação de capa profissional"]["TRUE"]) {
+                    
+                    const capaConfig = produtosSimplificado.campos["Criação de capa profissional"]["TRUE"];
+                    designerCost = (capaConfig.preco_fixo || 0) + 
+                                  (capaConfig.preco_por_unidade || 0) * values.quantidade +
+                                  (capaConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                    console.log(`Serviço de arte: Criação de Capa Profissional (JSON) - R$${designerCost.toFixed(2)}`);
+                } else {
+                    // Fallback para valor fixo
+                    designerCost = 485.00;
+                    console.log("Serviço de arte: Criação de Capa Profissional (valor fixo) - R$485,00");
+                }
+        } else if (values.designerOption === 'somente_diagramação') {
+                // Buscar no JSON o campo "Diagramação do miolo" com opção "TRUE"
+                if (produtosSimplificado && produtosSimplificado.campos && 
+                    produtosSimplificado.campos["Diagramação do miolo"] && 
+                    produtosSimplificado.campos["Diagramação do miolo"]["TRUE"]) {
+                    
+                    const diagConfig = produtosSimplificado.campos["Diagramação do miolo"]["TRUE"];
+                    designerCost = (diagConfig.preco_fixo || 0) + 
+                                  (diagConfig.preco_por_unidade || 0) * values.quantidade +
+                                  (diagConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                    console.log(`Serviço de arte: Diagramação do Miolo (JSON) - R$${designerCost.toFixed(2)}`);
+                } else {
+                    // Fallback para cálculo tradicional
+                    designerCost = 3.50 * (values.paginas_pb + values.paginas_cl);
+                    console.log("Serviço de arte: Diagramação do Miolo (valor fixo) - R$3,50 x", (values.paginas_pb + values.paginas_cl), "=", designerCost);
+                }
+        } else if (values.designerOption === 'capa_diagramação') {
+                // Combinar os dois serviços (capa e diagramação)
+                let custoCapa = 0;
+                let custoDiagramacao = 0;
+                
+                // Calcular custo da capa
+                if (produtosSimplificado && produtosSimplificado.campos && 
+                    produtosSimplificado.campos["Criação de capa profissional"] && 
+                    produtosSimplificado.campos["Criação de capa profissional"]["TRUE"]) {
+                    
+                    const capaConfig = produtosSimplificado.campos["Criação de capa profissional"]["TRUE"];
+                    custoCapa = (capaConfig.preco_fixo || 0) + 
+                               (capaConfig.preco_por_unidade || 0) * values.quantidade +
+                               (capaConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                } else {
+                    custoCapa = 485.00;
+                }
+                
+                // Calcular custo da diagramação
+                if (produtosSimplificado && produtosSimplificado.campos && 
+                    produtosSimplificado.campos["Diagramação do miolo"] && 
+                    produtosSimplificado.campos["Diagramação do miolo"]["TRUE"]) {
+                    
+                    const diagConfig = produtosSimplificado.campos["Diagramação do miolo"]["TRUE"];
+                    custoDiagramacao = (diagConfig.preco_fixo || 0) + 
+                                      (diagConfig.preco_por_unidade || 0) * values.quantidade +
+                                      (diagConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                } else {
+                    custoDiagramacao = 3.50 * (values.paginas_pb + values.paginas_cl);
+                }
+                
+                // Somar os dois custos
+                designerCost = custoCapa + custoDiagramacao;
+                console.log(`Serviço de arte: Capa (R$${custoCapa.toFixed(2)}) + Diagramação (R$${custoDiagramacao.toFixed(2)}) = R$${designerCost.toFixed(2)}`);
+            }
+        } catch (error) {
+            console.error("Erro ao calcular serviços de designer:", error);
+            // Fallback para valores fixos em caso de erro
+            if (values.designerOption === 'somente_capa') {
+                designerCost = 485.00;
+                console.log("Serviço de arte (fallback): Criação de Capa Profissional - R$485,00");
+            } else if (values.designerOption === 'somente_diagramação') {
+                designerCost = 3.50 * (values.paginas_pb + values.paginas_cl);
+                console.log("Serviço de arte (fallback): Diagramação do Miolo - R$3,50 x", (values.paginas_pb + values.paginas_cl), "=", designerCost);
+            } else if (values.designerOption === 'capa_diagramação') {
+                designerCost = 485.00 + (3.50 * (values.paginas_pb + values.paginas_cl));
+                console.log("Serviço de arte (fallback): Capa + Diagramação - R$485,00 + (R$3,50 x", (values.paginas_pb + values.paginas_cl), ") =", designerCost);
+            }
+        }
+    }
     
-    // Valor fixo para marcador
-    const marcadorCost = values.marcador ? 1.50 * values.quantidade : 0; // R$1,50 por unidade, independente do tipo
-    // Valor fixo para revisão ortográfica: R$19,21 por página
-    const correcaoCost = values.correcao ? 19.21 * (values.paginas_pb + values.paginas_cl) : 0;
-    console.log("Revisão Ortográfica:", values.correcao ? "Sim" : "Não", "- Páginas:", (values.paginas_pb + values.paginas_cl), "- Custo:", correcaoCost);
+    // Cálculo para Shrink usando o JSON
+    let shrinkCost = 0;
+    if (values.shrink_active) {
+        try {
+            // Determinar o tipo de shrink selecionado
+            const tipoShrink = values.shrink_type === 'adicional' ? 'Shrink Adicional' : 'Sem Shrink';
+            
+            // Buscar configuração no JSON
+            if (produtosSimplificado && produtosSimplificado.campos && 
+                produtosSimplificado.campos["Shrink"] && 
+                produtosSimplificado.campos["Shrink"][tipoShrink]) {
+                
+                const shrinkConfig = produtosSimplificado.campos["Shrink"][tipoShrink];
+                shrinkCost = (shrinkConfig.preco_fixo || 0) + 
+                            (shrinkConfig.preco_por_unidade || 0) * values.quantidade +
+                            (shrinkConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                console.log(`Shrink (JSON): ${tipoShrink} - Custo: R$${shrinkCost.toFixed(2)}`);
+            } else {
+                // Fallback para valor fixo
+                shrinkCost = 0.30 * values.quantidade;
+                console.log(`Shrink (valor fixo): Embalagem plástica individual - Custo: R$${shrinkCost.toFixed(2)}`);
+            }
+        } catch (error) {
+            console.error("Erro ao calcular shrink:", error);
+            // Fallback para valor fixo em caso de erro
+            shrinkCost = 0.30 * values.quantidade;
+            console.log(`Shrink (fallback): Embalagem plástica individual - Custo: R$${shrinkCost.toFixed(2)}`);
+        }
+    } else {
+        console.log("Sem shrink selecionado - Custo: R$0.00");
+    }
+    
+    // Cálculo para marcador usando o JSON
+    let marcadorCost = 0;
+    if (values.marcador) {
+        try {
+            // Mapear o tipo de marcador para o nome no JSON
+            const tipoMarcador = values.tipoMarcador === 'frente' ? 'Somente frente' : 
+                                (values.tipoMarcador === 'frente_verso' ? 'Frente e verso' : 'Nenhum');
+            
+            // Buscar configuração no JSON
+            if (produtosSimplificado && produtosSimplificado.campos && 
+                produtosSimplificado.campos["Marcador de página"] && 
+                produtosSimplificado.campos["Marcador de página"][tipoMarcador]) {
+                
+                const marcadorConfig = produtosSimplificado.campos["Marcador de página"][tipoMarcador];
+                marcadorCost = (marcadorConfig.preco_fixo || 0) + 
+                              (marcadorConfig.preco_por_unidade || 0) * values.quantidade +
+                              (marcadorConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                console.log(`Marcador (JSON): ${tipoMarcador} - Custo: R$${marcadorCost.toFixed(2)}`);
+            } else {
+                // Fallback para valor fixo
+                marcadorCost = 1.50 * values.quantidade;
+                console.log(`Marcador (valor fixo): ${values.tipoMarcador || 'Padrão'} - Custo: R$${marcadorCost.toFixed(2)}`);
+            }
+        } catch (error) {
+            console.error("Erro ao calcular marcador:", error);
+            // Fallback para valor fixo em caso de erro
+            marcadorCost = 1.50 * values.quantidade;
+            console.log(`Marcador (fallback): ${values.tipoMarcador || 'Padrão'} - Custo: R$${marcadorCost.toFixed(2)}`);
+        }
+    } else {
+        console.log("Sem marcador selecionado - Custo: R$0.00");
+    }
+    
+    // Cálculo para revisão ortográfica usando o JSON
+    let correcaoCost = 0;
+    if (values.correcao) {
+        try {
+            // Buscar configuração no JSON
+            if (produtosSimplificado && produtosSimplificado.campos && 
+                produtosSimplificado.campos["Revisão ortográfica"] && 
+                produtosSimplificado.campos["Revisão ortográfica"]["TRUE"]) {
+                
+                const revisaoConfig = produtosSimplificado.campos["Revisão ortográfica"]["TRUE"];
+                correcaoCost = (revisaoConfig.preco_fixo || 0) + 
+                              (revisaoConfig.preco_por_unidade || 0) * values.quantidade +
+                              (revisaoConfig.preco_por_pagina || 0) * (values.paginas_pb + values.paginas_cl);
+                console.log(`Revisão Ortográfica (JSON): ${values.paginas_pb + values.paginas_cl} páginas - Custo: R$${correcaoCost.toFixed(2)}`);
+            } else {
+                // Fallback para valor fixo
+                correcaoCost = 19.21 * (values.paginas_pb + values.paginas_cl);
+                console.log(`Revisão Ortográfica (valor fixo): ${values.paginas_pb + values.paginas_cl} páginas - Custo: R$${correcaoCost.toFixed(2)}`);
+            }
+        } catch (error) {
+            console.error("Erro ao calcular revisão ortográfica:", error);
+            // Fallback para valor fixo em caso de erro
+            correcaoCost = 19.21 * (values.paginas_pb + values.paginas_cl);
+            console.log(`Revisão Ortográfica (fallback): ${values.paginas_pb + values.paginas_cl} páginas - Custo: R$${correcaoCost.toFixed(2)}`);
+        }
+    } else {
+        console.log("Sem revisão ortográfica selecionada - Custo: R$0.00");
+    }
     const shippingCost = values.shippingOption ? calcularValorCampo("Frete", values.shippingOption, values.quantidade, values.paginas_pb + values.paginas_cl) : 0;
     
          // Preço por livro - removido preço base fixo
