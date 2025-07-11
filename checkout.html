@@ -255,8 +255,20 @@
         .form-section.active { display: block; animation: fadeSlideIn 0.7s ease-out; }
         @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .page-title { font-size: 2rem; font-weight: 800; color: #1a202c; text-align: center; margin: 2rem 0; }
-        .info-icon { transition: all 0.2s ease; cursor: pointer; color: #a0aec0; margin-left: 5px; }
-        .info-icon:hover { color: var(--cor-primaria); transform: scale(1.1); }
+        .info-icon { 
+    transition: all 0.2s ease; 
+    cursor: pointer; 
+    color: #a0aec0; 
+    margin-left: 5px;
+    padding: 8px;
+    display: inline-block;
+    position: relative;
+    z-index: 5;
+}
+.info-icon:hover { 
+    color: var(--cor-primaria); 
+    transform: scale(1.1); 
+}
         .dropzone { border: 2px dashed #e2e8f0; border-radius: 8px; background-color: #f8fafc; padding: 1rem; }
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -2880,8 +2892,8 @@
                                     </div>
                                 </div>
         
-                                <div class="mt-6 text-center">
-                                    <button type="button" onclick="validateAndNext(1, 2)" class="bg-[#2B4388] text-white px-10 py-2.5 rounded-lg hover:bg-[#1E2E5E] font-semibold text-base shadow-lg hover:shadow-xl transition-transform transform hover:scale-105">Avançar para Entrega</button>
+                                <div class="mt-2.5 text-center">
+                                    <button type="button" onclick="validateAndNext(1, 2)" class="bg-[#2B4388] text-white px-10 py-1 rounded-lg hover:bg-[#1E2E5E] font-semibold text-base shadow-lg hover:shadow-xl transition-transform transform hover:scale-105">Avançar para Entrega</button>
                                   </div>
                             </div>
         
@@ -2991,7 +3003,7 @@
                 </div>
             </main>
         
-            <div id="info-popup" class="hidden fixed inset-0 bg-black bg-opacity-60 items-center justify-center p-4" style="z-index: 1003;">
+            <div id="info-popup" class="hidden fixed inset-0 bg-black bg-opacity-60 items-center justify-center p-4" style="z-index: 9999;">
                 <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full relative">
                     <h3 class="text-xl font-bold mb-3 text-gray-800" id="popup-title"></h3>
                     <div class="popup-body"><div id="popup-image-container" class="mb-4"><img id="popup-image" src="" class="w-full h-auto rounded-md" alt="Ilustração"></div><div id="popup-content" class="text-gray-700 leading-relaxed text-sm"></div></div>
@@ -20639,6 +20651,7 @@ const produtosSimplificado = {
             });
 
             $(document).on('click', '.info-icon', function(e) {
+                e.preventDefault();
                 e.stopPropagation();
                 const title = $(this).data('title');
                 const content = $(this).data('content');
@@ -20651,7 +20664,9 @@ const produtosSimplificado = {
                 } else {
                     $('#popup-image-container').hide();
                 }
-                $('#info-popup').removeClass('hidden').addClass('flex');
+                setTimeout(function() {
+                    $('#info-popup').removeClass('hidden').addClass('flex');
+                }, 10);
             });
             $('#close-popup-btn, #info-popup').on('click', function(e) {
                 if (e.target.id === 'info-popup' || e.target.id === 'close-popup-btn') {
@@ -21223,13 +21238,13 @@ const produtosSimplificado = {
         </div>
     </section>
 
-    <div class="section-transition section-transition-blue" style="height: 40px;"></div>
+    <div class="section-transition section-transition-blue" style="height: 4px;"></div>
 
     <!-- Seção 3 - Avaliações de Clientes -->
-    <section class="bg-indigo-50 py-8 px-4 md:px-8">
+    <section class="bg-indigo-50 py-1 px-4 md:px-8">
         <div class="container mx-auto max-w-6xl">
-            <div class="text-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">Avaliações reais de nossos clientes</h2>
+            <div class="text-center mb-1.5">
+                <h2 class="text-3xl font-bold text-gray-800 mb-0">Avaliações reais de nossos clientes</h2>
                 <p class="text-lg text-gray-600">Verificadas e auditadas pelo Reclame Aqui</p>
             </div>
             
