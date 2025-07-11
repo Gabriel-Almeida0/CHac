@@ -146,7 +146,12 @@
         }
 
         /* --- Estilos do Slider de Imagens --- */
-        .slider-container { width: 100%; overflow: hidden; position: relative; }
+        .slider-container { 
+            width: 100%; 
+            overflow: hidden; 
+            position: relative; 
+            z-index: 0; /* Menor que o z-index do header quando sticky */
+        }
         .slider-wrapper { display: flex; width: 300%; transition: transform 0.7s ease-in-out; }
         .slide { width: 33.333%; height: 350px; display: flex; align-items: center; justify-content: center; color: white; text-align: center; background-size: cover; background-position: center; }
         .slide-content { padding: 2rem; background-color: rgba(0, 0, 0, 0.5); border-radius: 8px; }
@@ -975,11 +980,30 @@
             }
 
             header {
+                position: relative !important; /* Alterado para relative */
+                width: 100%;
+                z-index: 1; /* Z-index baixo quando não está em sticky */
+                background-color: var(--cor-primaria) !important;
+            }
+            
+            /* Regra específica para quando o header está em sticky */
+            header.sticky {
                 position: fixed !important;
+                top: 0;
+                left: 0;
+                width: 100%;
+                z-index: 1001; /* Z-index alto apenas quando está em sticky */
+            }
+            
+            /* Regra específica para quando o cabeçalho tem todas as classes */
+            header.on-scroll.sticky.scrolling {
+                background-color: rgba(128, 128, 128, 0.2) !important; /* Cinza com 80% de transparência */
+                backdrop-filter: blur(10px) !important;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             }
 
             header>.brxe-section,header>.brxe-container,header>.brxe-block,header>.brxe-div {
-                background-color: transparent !important;
+                background-color: var(--cor-primaria) !important;
             }
 
             header>.brxe-section {
@@ -988,21 +1012,29 @@
 
             header.sticky>div.brxe-section div.brxe-container {
                 max-height: 76px;
+                background-color: var(--cor-primaria) !important;
             }
 
+            header.on-scroll.sticky.scrolling>div.brxe-section,
+            header.sticky.scrolling>div.brxe-section {
+                background-color: transparent !important; /* Mantém a seção transparente */
+            }
+            
+            header.on-scroll.sticky.scrolling>div.brxe-section div.brxe-container,
             header.sticky.scrolling>div.brxe-section div.brxe-container {
-                backdrop-filter: blur(30px);
-                background-color: rgba(11, 27, 40, 0.5);
+                background-color: rgba(128, 128, 128, 0.2) !important; /* Cinza com 80% de transparência */
+                backdrop-filter: blur(10px);
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             }
 
             #brxe-9322b9 {
                 transition: var(--iw-transition);
                 width: 100%;
-                max-width: 190px
+                max-width: 240px /* Aumentado de 190px para 240px */
             }
 
             #brxe-9322b9 .bricks-site-logo {
-                height: 54px
+                height: 70px /* Aumentado de 54px para 70px */
             }
 
             @media (max-width: 767px) {
@@ -1269,7 +1301,20 @@
             }
 
             header * {
-                transition: all;
+                transition: all 0.3s ease;
+            }
+            
+            /* Estilo para o cabeçalho quando está em scrolling */
+            header.on-scroll.sticky.scrolling,
+            header.sticky.scrolling {
+                background-color: rgba(128, 128, 128, 0.2) !important; /* Cinza com 80% de transparência */
+                backdrop-filter: blur(10px) !important;
+            }
+            
+            /* Garantir que os elementos internos não sobreponham o fundo do cabeçalho */
+            header.on-scroll.sticky.scrolling *,
+            header.sticky.scrolling * {
+                background-color: transparent !important;
             }
 
             header.sticky:not(.scrolling)>div.brxe-section {
@@ -1282,7 +1327,7 @@
             }
 
             header.sticky.scrolling>div.brxe-section .brxe-logo {
-                max-width: 54px !important;
+                max-width: 180px !important; /* Aumentado de 54px para 180px */
             }
 
             @media(max-width: 767px) {
@@ -2376,14 +2421,14 @@
             <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TKPDG4N9" height="0" width="0" style="display:none;visibility:hidden"></iframe>
         </noscript>
         <a class="skip-link" href="#brx-content">Saltar para o conteúdo principal</a>
-        <header id="brx-header" class="sticky on-scroll">
+        <header id="brx-header" class="on-scroll">
             <div id="brxe-3798a2" class="brxe-section bricks-lazy-hidden">
                 <div id="brxe-284cb8" class="brxe-container bricks-lazy-hidden">
                     <a id="brxe-9322b9" class="brxe-logo" href="/" title="Intuity Web" aria-current="page">
-                        <img src=".svg" class="bricks-site-logo css-filter" alt="Intuity Web" data-bricks-logo="https://mediumspringgreen-crane-749242.hostingersite.com/wp-content/themes/mirailivros/assets/img/logo-mirai-livros-h-white.svg" data-bricks-logo-inverse="https://mediumspringgreen-crane-749242.hostingersite.com/wp-content/themes/mirailivros/assets/img/logo-mirai-livros-mini.webp" " loading="eager" height="54" decoding="async"/>
+                        <img src="https://mediumspringgreen-crane-749242.hostingersite.com/wp-content/themes/mirailivros/assets/img/logo-mirai-livros-h-white.svg" class="bricks-site-logo css-filter" alt="Intuity Web" data-bricks-logo="https://mediumspringgreen-crane-749242.hostingersite.com/wp-content/themes/mirailivros/assets/img/logo-mirai-livros-h-white.svg" data-bricks-logo-inverse="https://mediumspringgreen-crane-749242.hostingersite.com/wp-content/themes/mirailivros/assets/img/logo-mirai-livros-mini.webp" loading="eager" height="54" decoding="async"/>
                     </a>
                     <a id="brxe-romyts" class="brxe-image iw-header-logo-m tag" href="https://www.intuityweb.digital/" title="Intuity Web" aria-current="page">
-                        <img src="data:image/svg+xml,%3Csvg%20xmlns=&#039;http://www.w3.org/2000/svg&#039;%20viewBox=&#039;0%200%20%20&#039;%3E%3C/svg%3E" class="css-filter size-full bricks-lazy-hidden" alt="Intuity Web" decoding="async" data-src="https://mediumspringgreen-crane-749242.hostingersite.com/wp-content/themes/mirailivros/assets/img/logo-mirai-livros-mini.webp" " data-type="string"/>
+                        <img src="https://mediumspringgreen-crane-749242.hostingersite.com/wp-content/themes/mirailivros/assets/img/logo-mirai-livros-mini.webp" class="css-filter size-full" alt="Intuity Web" decoding="async" loading="eager"/>
                     </a>
                     <div id="brxe-qcxxop" class="brxe-div bricks-lazy-hidden">
                        <a id="brxe-fblexv" class="brxe-button tag" href="/minha-conta" title="Minha Conta" style="color: white; font-size: 2rem; align-items: center; justify-content: center;">
@@ -21080,6 +21125,59 @@ const produtosSimplificado = {
         </div>
     </footer>
 
+    <script>
+        // Controla o comportamento do cabeçalho durante o scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const header = document.querySelector('header');
+            const headerSection = header.querySelector('.brxe-section');
+            const headerContainer = header.querySelector('.brxe-container');
+            
+            // Aplicar estilos iniciais
+            if (headerSection) {
+                headerSection.style.backgroundColor = 'transparent';
+            }
+            
+            function handleScroll() {
+                // Quando rolar mais de 50px, adiciona a classe sticky e scrolling
+                if (window.scrollY > 50) {
+                    header.classList.add('sticky');
+                    header.classList.add('scrolling');
+                    
+                    // Garante que a seção fique transparente durante o scroll
+                    if (headerSection) {
+                        headerSection.style.backgroundColor = 'transparent';
+                    }
+                    
+                    // Aplica o estilo cinza translúcido ao container
+                    if (headerContainer) {
+                        headerContainer.style.backgroundColor = 'rgba(128, 128, 128, 0.2)';
+                        headerContainer.style.backdropFilter = 'blur(10px)';
+                        headerContainer.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+                    }
+                } else {
+                    // Quando voltar ao topo, remove as classes
+                    header.classList.remove('scrolling');
+                    header.classList.remove('sticky');
+                    
+                    // Mantém a seção transparente
+                    if (headerSection) {
+                        headerSection.style.backgroundColor = 'transparent';
+                    }
+                    
+                    // Reseta o estilo do container
+                    if (headerContainer) {
+                        headerContainer.style.backgroundColor = 'transparent';
+                        headerContainer.style.backdropFilter = 'none';
+                    }
+                }
+            }
+            
+            window.addEventListener('scroll', handleScroll);
+            // Verifica o estado inicial
+            handleScroll();
+        });
+    </script>
+    
     <script>
         // Funcionalidade para o upload de arquivos
         const dropArea = document.getElementById('dropArea');
