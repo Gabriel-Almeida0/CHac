@@ -2893,7 +2893,7 @@
                                 </div>
         
                                 <div class="mt-0 text-center mb-0">
-                                    <button type="button" onclick="validateAndNext(1, 2)" class="bg-[#2B4388] text-white px-10 py-0.5 rounded-lg hover:bg-[#1E2E5E] font-semibold text-base shadow-lg hover:shadow-xl transition-transform transform hover:scale-105">Avançar para Entrega</button>
+                                    <button type="button" onclick="validateAndNext(1, 2)" class="bg-[#2B4388] text-white px-10 py-3 rounded-lg hover:bg-[#1E2E5E] font-semibold text-lg shadow-lg hover:shadow-xl transition-transform transform hover:scale-105 w-full md:w-auto">Avançar para Entrega</button>
                                   </div>
                             </div>
         
@@ -21230,7 +21230,14 @@ const produtosSimplificado = {
     
 
     <!-- Seção 3 - Avaliações de Clientes -->
-    <section class="bg-indigo-50 py-0 px-4 md:px-8" style="margin-top: -15px;">
+    <section class="bg-indigo-50 py-0 px-4 md:px-8" style="margin-top: 20px;">
+        <style>
+            @media (max-width: 768px) {
+                .bg-indigo-50 {
+                    margin-top: -80px !important;
+                }
+            }
+        </style>
         <div class="container mx-auto max-w-6xl">
             <div class="text-center mb-0.5">
                 <h2 class="text-3xl font-bold text-gray-800 mb-0">Avaliações reais de nossos clientes</h2>
