@@ -139,6 +139,35 @@
             background: none; border: none; cursor: pointer;
         }
         
+        /* Estilo para o botão hambúrguer do menu mobile */
+        .bricks-mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            z-index: 1002;
+        }
+        
+        @media (max-width: 767px) {
+            .bricks-mobile-menu-toggle {
+                display: block;
+            }
+        }
+        
+        /* Barras do botão hambúrguer */
+        .bricks-mobile-menu-toggle .bar-top,
+        .bricks-mobile-menu-toggle .bar-center,
+        .bricks-mobile-menu-toggle .bar-bottom {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 5px 0;
+            background-color: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        
         /* --- Responsividade do Header --- */
         @media (max-width: 991px) {
             .header-nav, .header-btn { display: none; }
@@ -1184,7 +1213,11 @@
             }
 
             #brxe-e4db3d .bricks-mobile-menu-toggle {
-                color: var(--bricks-color-efhlph)
+                color: var(--bricks-color-efhlph);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
             }
 
             #brxe-e4db3d .bricks-mobile-menu .sub-menu {
