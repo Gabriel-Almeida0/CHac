@@ -146,7 +146,7 @@
             border: none;
             cursor: pointer;
             padding: 10px;
-            z-index: 1002;
+            z-index: 1050; /* Aumentado para ficar acima de todos os outros elementos */
         }
         
         @media (max-width: 767px) {
@@ -178,7 +178,7 @@
             height: 100vh;
             background-color: #fff;
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            z-index: 1001;
+            z-index: 1049; /* Aumentado para ficar acima de outros elementos, mas abaixo do botão toggle */
             transition: left 0.3s ease;
             overflow-y: auto;
         }
@@ -194,7 +194,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
-            z-index: 1000;
+            z-index: 1048; /* Aumentado para ficar acima de outros elementos, mas abaixo do menu */
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -263,7 +263,7 @@
     padding: 8px;
     display: inline-block;
     position: relative;
-    z-index: 5;
+    z-index: 1; /* Reduzido para não sobrepor o menu mobile */
 }
 .info-icon:hover { 
     color: var(--cor-primaria); 
