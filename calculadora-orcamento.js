@@ -4,38 +4,38 @@ const bookModels = {
     'Capa Couchê / Triplex': {
         tamanhos: ["14x21cm", "16x23cm", "21x29,7cm"],
         lombada: {
-            options: { "pur": "PUR (Lombada Quadrada)", "wire-o": "Wire-o", "espiral": "Espiral" },
+            options: { "pur": "PUR (Lombada Quadrada)", "wire-o": "Wire-o", "espiral": "Espiral", "canoa": "Grampo (Canoa)" },
             rule: (val, pages) => (val === 'pur' && pages < 60) ? 'Lombada PUR requer no mínimo 60 páginas.' : ''
         },
-        papelCapa: ["Couchê Brilho 250g", "Couchê Fosco 250g", "Triplex 300g"],
+        papelCapa: ["Couchê Brilho 250g", "Couchê Fosco 250g", "Triplex 300g", "Triplex 250g"],
         orelha: { hidden: false, options: { "sem": "Sem Orelha", "6cm": "6 cm", "7cm": "7 cm", "8cm": "8 cm", "10cm": "10 cm" } },
-        papelMiolo: ["Offset 80g", "Offset 75g", "Couchê 115g"],
+        papelMiolo: ["Offset 80g", "Offset 75g", "Couchê 115g", "Off-white 80g", "Offset 90g"],
         paginaRule: "O total de páginas (P&B + Coloridas) deve ser um número par.",
         paginaRuleCheck: (pages) => pages % 2 === 0,
-        shrink: { "adicional": "Shrink Adicional", "plastificacao": "Plastificação Individual" }
+        shrink: { "adicional": "Shrink Adicional", "plastificacao": "Plastificação Individual", "sem": "Sem Shrink" }
     },
     'Capa Dura': {
         tamanhos: ["14x21cm", "16x23cm", "21x29,7cm"],
         lombada: {
-            options: { "pur": "PUR (Lombada Quadrada)", "wire-o": "Wire-o", "espiral": "Espiral" },
+            options: { "pur": "PUR (Lombada Quadrada)", "wire-o": "Wire-o", "espiral": "Espiral", "canoa": "Grampo (Canoa)" },
             rule: (val, pages) => (val === 'pur' && pages < 60) ? 'Lombada PUR requer no mínimo 60 páginas.' : ''
         },
         papelCapa: [], // Not applicable
         orelha: { hidden: true },
-        papelMiolo: ["Offset 80g", "Offset 75g", "Couchê 115g"],
+        papelMiolo: ["Offset 80g", "Offset 75g", "Couchê 115g", "Off-white 80g", "Offset 90g"],
         paginaRule: "O total de páginas (P&B + Coloridas) deve ser um número par.",
         paginaRuleCheck: (pages) => pages % 2 === 0,
-        shrink: { "adicional": "Shrink Adicional", "plastificacao": "Plastificação Individual" }
+        shrink: { "adicional": "Shrink Adicional", "plastificacao": "Plastificação Individual", "sem": "Sem Shrink" }
     },
     'Grampo (Canoa)': {
-        tamanhos: ["14x21cm", "16x23cm", "21x29,7cm"],
+        tamanhos: ["14x21cm", "16x23cm", "21x29,7cm", "21x14cm", "23x16cm", "20x20cm", "29,7x21cm"],
         lombada: { fixed: "canoa" },
-        papelCapa: ["Couchê Brilho 250g", "Couchê Fosco 250g", "Triplex 300g"],
+        papelCapa: ["Couchê Brilho 250g", "Couchê Fosco 250g", "Triplex 300g", "Triplex 250g"],
         orelha: { hidden: true },
-        papelMiolo: ["Offset 80g", "Offset 75g", "Couchê 115g"],
+        papelMiolo: ["Offset 80g", "Offset 75g", "Couchê 115g", "Off-white 80g", "Offset 90g"],
         paginaRule: "O total de páginas (P&B + Coloridas) deve ser múltiplo de 4.",
         paginaRuleCheck: (pages) => pages % 4 === 0,
-        shrink: { "adicional": "Shrink Adicional" }
+        shrink: { "adicional": "Shrink Adicional", "sem": "Sem Shrink" }
     }
 };
 
